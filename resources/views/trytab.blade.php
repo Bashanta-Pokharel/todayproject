@@ -9,6 +9,22 @@
 
     <div class="card shadow mb-4">
         <div class="card-body">
+            <!-- back to list dashboard -->
+            <a href="{{ route('dashboard') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+            <!-- attribute and category add -->
+            <a href="{{ route('admin.attribute.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Attribute
+            </a>
+            <a href="{{ route('admin.category.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
+            <!-- view products -->
+            <a href="{{ route('dashboard') }}" class="btn btn-info btn-sm">
+                <i class="fas fa-eye"></i> View Products
+            </a>
+            <br><br>
 
             <form action="#" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -137,8 +153,26 @@
                 </button>
 
             </form>
+            <br>
+             <a href="{{ route('dashboard') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+            <!-- attribute and category add -->
+            <a href="{{ route('admin.attribute.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Attribute
+            </a>
+            <a href="{{ route('admin.category.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
+            <!-- view products -->
+            <a href="{{ route('dashboard') }}" class="btn btn-info btn-sm">
+                <i class="fas fa-eye"></i> View Products
+            </a>
+
+            
 
         </div>
+        
     </div>
 
 </div>

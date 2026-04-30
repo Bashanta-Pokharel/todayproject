@@ -11,6 +11,8 @@
 
     <!-- Custom fonts for this template-->
     <link href="{{asset('assets/backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
+    <!-- fabicon -->
+    <link rel="icon" href="{{ asset('assets/backend/img/b.ico') }}" type="image/png">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
@@ -70,6 +72,8 @@
                         <a class="collapse-item" href="{{ route('admin.attribute.index') }}">List Attributes</a>
                         <a class="collapse-item" href="{{ route('admin.category.trashed') }}"> Category Trash</a>
                         <a class="collapse-item" href="{{ route('admin.attribute.trashed') }}">Attribute Trash</a>
+                        <!-- add product form try tab -->
+                         <a class="collapse-item" href="{{ route('trytab') }}">Add Product</a>
                     </div>
                 </div>
             </li>
