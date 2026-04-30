@@ -14,16 +14,21 @@
         </div>
 
         <div class="card-body">
+            @include('admin.includes.flash_message')
 
             {{-- Create Button --}}
             <a href="{{ route('admin.attribute.create') }}" class="btn btn-primary mb-3">
                 Create Attribute
+            </a>
+            <a href="{{ route('admin.attribute.trashed') }}" class="btn btn-danger mb-3">
+                View Trashed Attributes
             </a>
 
             <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Title</th>
                         <th>Status</th>
                         <th>Created By</th>
                         <th>Updated By</th>
@@ -32,9 +37,10 @@
                 </thead>
 
                 <tbody>
-                    @forelse($records as $record)
+                    @forelse($data['records'] as $record)
                         <tr>
                             <td>{{ $record->id }}</td>
+                            <td>{{ $record->title }}</td>
 
                             <td>
                                 @if($record->status == 1)
@@ -53,9 +59,9 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('admin.category.attribute.show', $record->id) }}" class="btn btn-info btn-sm">View</a>
+                                <a href="{{ route('admin.attribute.show', $record->id) }}" class="btn btn-info btn-sm">View</a>
 
-                                <a href="{{ route('admin.category.attribute.edit', $record->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="{{ route('admin.attribute.edit', $record->id) }}" class="btn btn-warning btn-sm">Edit</a>
 
                                 <form action="{{ route('admin.attribute.destroy', $record->id) }}" method="POST" style="display:inline-block;">
                                     @csrf
@@ -74,8 +80,12 @@
                         </tr>
                     @endforelse
                 </tbody>
+                
 
             </table>
+            <a href="{{ route('admin.attribute.create') }}" class="btn btn-primary mb-3">
+                Create Attribute
+            </a>
 
         </div>
     </div>

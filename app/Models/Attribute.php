@@ -3,14 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Attribute extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'title',
-        'slug',
-        'rank',
         'status',
-        'created_by'
+        'created_by',
+        'updated_by'
     ];
 }

@@ -64,9 +64,12 @@
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="{{ route('admin.category.create') }}">Create</a>
-                        <a class="collapse-item" href="{{ route('admin.category.index') }}">List</a>
-                        <a class="collapse-item" href="{{ route('admin.category.trashed') }}">Trash</a>
+                        <a class="collapse-item" href="{{ route('admin.category.create') }}">Create Category</a>
+                        <a class="collapse-item" href="{{ route('admin.attribute.create') }}">Create Attribute</a>
+                        <a class="collapse-item" href="{{ route('admin.category.index') }}">List Categories</a>
+                        <a class="collapse-item" href="{{ route('admin.attribute.index') }}">List Attributes</a>
+                        <a class="collapse-item" href="{{ route('admin.category.trashed') }}"> Category Trash</a>
+                        <a class="collapse-item" href="{{ route('admin.attribute.trashed') }}">Attribute Trash</a>
                     </div>
                 </div>
             </li>

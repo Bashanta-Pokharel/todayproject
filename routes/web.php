@@ -12,6 +12,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/trytab', function () {
+    return view('trytab');
+})->middleware(['auth', 'verified'])->name('trytab');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -31,7 +35,20 @@ Route::middleware('auth')->prefix('admin')
 
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+
+    
+    Route::get('attribute/trashed', [AttributeController::class, 'trashed'])
+        ->name('attribute.trashed');
+
+    
+    Route::post('attribute/{id}/restore', [AttributeController::class, 'restore'])
+        ->name('attribute.restore');
+
+    Route::delete('attribute/{id}/force-delete', [AttributeController::class, 'forceDelete'])
+        ->name('attribute.force-delete');
+
     Route::resource('attribute', AttributeController::class);
+    
 });
 
 require __DIR__.'/auth.php';

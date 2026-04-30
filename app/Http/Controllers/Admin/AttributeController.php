@@ -145,4 +145,6 @@ class AttributeController extends Controller
             ->route('admin.attribute.trashed')
             ->with('success', 'Attribute Permanently Deleted Successfully');
     }
+    
+    
 }
