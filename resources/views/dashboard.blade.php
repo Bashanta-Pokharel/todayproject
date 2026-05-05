@@ -1,4 +1,4 @@
-@extends('layouts/admin')
+@extends('layouts.admin')
 
 @section('title','Admin Dashboard')
 
@@ -9,35 +9,59 @@
 
     <div class="row">
 
-        <!-- Category -->
+        <!-- ================= CATEGORY ================= -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card shadow h-100 py-2">
                 <div class="card-body">
-                    <h5>Category</h5>
-                    <a href="{{ route('admin.category.create') }}" class="btn btn-primary btn-sm">Add Category</a>
-                    <a href="{{ route('admin.category.index') }}" class="btn btn-success btn-sm">View Categories</a>
+
+                    <h5 class="mb-3">Category</h5>
+
+                    <a href="{{ route('admin.category.create') }}" class="btn btn-primary btn-sm mb-1">
+                        Add Category
+                    </a>
+
+                    <a href="{{ route('admin.category.index') }}" class="btn btn-success btn-sm">
+                        View Categories
+                    </a>
+
                 </div>
             </div>
         </div>
 
-        <!-- Attribute -->
+        <!-- ================= ATTRIBUTE ================= -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card shadow h-100 py-2">
                 <div class="card-body">
-                    <h5>Attribute</h5>
-                    <a href="{{ route('admin.attribute.create') }}" class="btn btn-primary btn-sm">Add Attribute</a>
-                    <a href="{{ route('admin.attribute.index') }}" class="btn btn-success btn-sm">View Attributes</a>
+
+                    <h5 class="mb-3">Attribute</h5>
+
+                    <a href="{{ route('admin.attribute.create') }}" class="btn btn-primary btn-sm mb-1">
+                        Add Attribute
+                    </a>
+
+                    <a href="{{ route('admin.attribute.index') }}" class="btn btn-success btn-sm">
+                        View Attributes
+                    </a>
+
                 </div>
             </div>
         </div>
 
-        <!-- Product -->
+        <!-- ================= PRODUCT ================= -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card shadow h-100 py-2">
                 <div class="card-body">
-                    <h5>Product</h5>
-                    <a href="{{ route('trytab') }}" class="btn btn-primary btn-sm">Add Product</a>
-                    <a href="#" class="btn btn-success btn-sm">View Products</a>
+
+                    <h5 class="mb-3">Product</h5>
+
+                    <a href="{{ route('admin.product.create') }}" class="btn btn-primary btn-sm mb-1">
+    Add Product
+</a>
+
+                    <a href="{{ route('admin.product.index') }} " class="btn btn-success btn-sm">
+                        View Products
+                    </a>
+
                 </div>
             </div>
         </div>

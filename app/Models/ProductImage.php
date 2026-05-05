@@ -6,13 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 //#[Fillable(['title','slug','rank','status','created_by','updated_by'])]
-class Attribute extends Model
+class ProductImage extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['title','status','created_by','updated_by'];
-
-    public function products(){
-        return $this->belongsToMany(Product::class);
-    }
+    protected $fillable = ['product_id','image_name','image_title','status','created_by','updated_by'];
 }
-

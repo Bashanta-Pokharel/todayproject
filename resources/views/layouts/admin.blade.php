@@ -73,10 +73,12 @@
                         <a class="collapse-item" href="{{ route('admin.category.trashed') }}"> Category Trash</a>
                         <a class="collapse-item" href="{{ route('admin.attribute.trashed') }}">Attribute Trash</a>
                         <!-- add product form try tab -->
-                         <a class="collapse-item" href="{{ route('trytab') }}">Add Product</a>
+                         <a class="collapse-item" href="{{ route('admin.product.create') }}">Add Product</a>
                     </div>
                 </div>
             </li>
+            
+            
 
 
         </ul>
