@@ -8,11 +8,11 @@
     <meta name="author" content="">
 
     <title>@yield('title')</title>
+    
+   
 
     <!-- Custom fonts for this template-->
     <link href="{{asset('assets/backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
-    <!-- fabicon -->
-    <link rel="icon" href="{{ asset('assets/backend/img/b.ico') }}" type="image/png">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
@@ -33,7 +33,9 @@
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
                 <div class="sidebar-brand-icon rotate-n-15">
-                    <img src="{{ asset('assets/backend/img/logo.png') }}" alt="Logo" width="100" height="100">
+                    <!-- logo add png -->
+                     <img src="{{asset('assets/backend/img/logo3.png')}}" alt="Logo" width="100" height="auto">
+
                 </div>
                 <div class="sidebar-brand-text mx-3">Ecommerce Admin</div>
             </a>
@@ -57,33 +59,57 @@
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
+            <!-- Category Management -->
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCategory"
+        aria-expanded="true" aria-controls="collapseCategory">
+        <i class="fas fa-fw fa-list"></i>
+        <span>Category Management</span>
+    </a>
+    <div id="collapseCategory" class="collapse {{ request()->routeIs('admin.category.*') ? 'show' : '' }}"
+        data-parent="#accordionSidebar">
+        <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item {{ request()->routeIs('admin.category.create') ? 'active' : '' }}" href="{{route('admin.category.create')}}">Create</a>
+            <a class="collapse-item {{ request()->routeIs('admin.category.index') ? 'active' : '' }}" href="{{route('admin.category.index')}}">List</a>
+            <a class="collapse-item {{ request()->routeIs('admin.category.trashed') ? 'active' : '' }}" href="{{route('admin.category.trashed')}}">Trash</a>
+        </div>
+    </div>
+</li>
+
+<!-- Attribute Management -->
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAttribute"
+        aria-expanded="true" aria-controls="collapseAttribute">
+        <i class="fas fa-fw fa-tags"></i>
+        <span>Attribute Management</span>
+    </a>
+    <div id="collapseAttribute" class="collapse {{ request()->routeIs('admin.attribute.*') ? 'show' : '' }}"
+        data-parent="#accordionSidebar">
+        <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item {{ request()->routeIs('admin.attribute.create') ? 'active' : '' }}" href="{{route('admin.attribute.create')}}">Create</a>
+            <a class="collapse-item {{ request()->routeIs('admin.attribute.index') ? 'active' : '' }}" href="{{route('admin.attribute.index')}}">List</a>
+            <a class="collapse-item {{ request()->routeIs('admin.attribute.trashed') ? 'active' : '' }}" href="{{route('admin.attribute.trashed')}}">Trash</a>
+        </div>
+    </div>
+</li>
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Category</span>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseThree"
+                   aria-expanded="true" aria-controls="collapseThree">
+                    <i class="fas fa-fw fa-shopping-bag"></i>
+                    <span>Product Management</span>
                 </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="collapseThree" class="collapse {{ request()->routeIs('admin.product.*') ? 'show' : '' }}" aria-labelledby="headingThree" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="{{ route('admin.category.create') }}">Create Category</a>
-                        <a class="collapse-item" href="{{ route('admin.attribute.create') }}">Create Attribute</a>
-                        <a class="collapse-item" href="{{ route('admin.category.index') }}">List Categories</a>
-                        <a class="collapse-item" href="{{ route('admin.attribute.index') }}">List Attributes</a>
-                        <a class="collapse-item" href="{{ route('admin.category.trashed') }}"> Category Trash</a>
-                        <a class="collapse-item" href="{{ route('admin.attribute.trashed') }}">Attribute Trash</a>
-                        <!-- add product form try tab -->
-                         <a class="collapse-item" href="{{ route('admin.product.create') }}">Add Product</a>
+                        <a class="collapse-item {{ request()->routeIs('admin.product.create') ? 'active' : '' }}" href="{{route('admin.product.create')}}">Create</a>
+                        <a class="collapse-item {{ request()->routeIs('admin.product.index') ? 'active' : '' }}" href="{{route('admin.product.index')}}">List</a>
+                        <a class="collapse-item {{ request()->routeIs('admin.product.trashed') ? 'active' : '' }}" href="{{route('admin.product.trashed')}}">Trash</a>
                     </div>
                 </div>
             </li>
-            
-            
 
 
         </ul>
         <!-- End of Sidebar -->
-
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
 
@@ -207,7 +233,7 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-               @yield('content')
+                @yield('content')
                 <!-- /.container-fluid -->
 
             </div>
@@ -217,7 +243,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>Copyright &copy; Ecommerce Admin {{ date('Y') }}</span>
                     </div>
                 </div>
             </footer>

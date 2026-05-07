@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
         use SoftDeletes;
 
         protected $fillable = ['title', 'slug', 'rank', 'status', 'created_by', 'updated_by'];
+        public function products(){
+        return $this->hasMany(Product::class,'category_id','id');
+    }
     }
     
 

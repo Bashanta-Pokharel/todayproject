@@ -5,14 +5,36 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-//#[Fillable(['title','slug','rank','status','created_by','updated_by'])]
 class Attribute extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['title','status','created_by','updated_by'];
 
-    public function products(){
-        return $this->belongsToMany(Product::class);
+    protected $fillable = [
+        'title',
+        'status',
+        'created_by',
+        'updated_by'
+    ];
+
+    /*
+    |-----------------------------------
+    | PRODUCTS RELATION (FIXED)
+    |-----------------------------------
+    */
+    public function products()
+    {
+        return $this->belongsToMany(
+                Product::class,
+                'attribute_product',   // ✅ pivot table
+                'attribute_id',        // ✅ this model key
+                'product_id'           // ✅ related model key
+            )
+            ->withPivot([
+                'values',
+                'status',
+                'created_by',
+                'updated_by'
+            ])
+            ->withTimestamps();
     }
 }
-

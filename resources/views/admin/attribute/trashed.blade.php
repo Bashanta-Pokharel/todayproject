@@ -1,14 +1,14 @@
 @extends('layouts.admin')
-@section('title','List | Attribute Management')
+@section('title','List | Product Management')
 
 @section('content')
 <div class="container-fluid">
 
     <!-- Page Heading -->
     <h1 class="h3 mb-4 text-gray-800">
-        Attribute Management
-        <a class="btn btn-success" href="{{ route('admin.attribute.create') }}">Create</a>
-        <a class="btn btn-primary" href="{{ route('admin.attribute.index') }}">List</a>
+        Product Management
+        <a class="btn btn-success" href="{{ route('admin.product.create') }}">Create</a>
+        <a class="btn btn-primary" href="{{ route('admin.product.index') }}">List</a>
     </h1>
 
     <!-- Card -->
@@ -19,7 +19,7 @@
            aria-controls="collapseCardExample">
 
             <h6 class="m-0 font-weight-bold text-primary">
-                Attribute Trashed Items
+                Product Trashed Items
             </h6>
         </a>
 
@@ -31,10 +31,13 @@
                 <table class="table table-bordered">
                     <tr>
                         <th>SN</th>
+                        <th>Category</th>
                         <th>Title</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
                         <th>Status</th>
                         <th>Created By</th>
-                        <th>Created At</th>
+                        <th>Deleted At</th>
                         <th>Action</th>
                     </tr>
 
@@ -42,7 +45,13 @@
                     <tr>
                         <td>{{ $loop->index + 1 }}</td>
 
+                        <td>{{ $record->category->title ?? 'N/A' }}</td>
+
                         <td>{{ $record->title }}</td>
+
+                        <td>{{ $record->price }}</td>
+
+                        <td>{{ $record->quantity }}</td>
 
                         <td>
                             @if($record->status == 1)
@@ -52,16 +61,15 @@
                             @endif
                         </td>
 
-                        <td>
-                            {{ $record->created_by ? App\Models\User::find($record->created_by)->name : '' }}
-                        </td>
+                        <!-- ✅ safer -->
+                        <td>{{ $record->created_by ?? '-' }}</td>
 
-                        <td>{{ $record->created_at }}</td>
+                        <td>{{ $record->deleted_at }}</td>
 
                         <td>
 
                             <!-- Restore -->
-                            <form action="{{ route('admin.attribute.restore', $record->id) }}" method="post">
+                            <form action="{{ route('admin.product.restore', $record->id) }}" method="post">
                                 @csrf
                                 <button type="submit" class="btn btn-warning mt-2">
                                     Restore
@@ -69,9 +77,9 @@
                             </form>
 
                             <!-- Force Delete -->
-                            <form action="{{ route('admin.attribute.force-delete', $record->id) }}"
+                            <form action="{{ route('admin.product.force-delete', $record->id) }}"
                                   method="post"
-                                  onsubmit="return confirm('Are you sure you want to permanently delete this attribute?')">
+                                  onsubmit="return confirm('Are you sure you want to permanently delete this product?')">
 
                                 @method('delete')
                                 @csrf
