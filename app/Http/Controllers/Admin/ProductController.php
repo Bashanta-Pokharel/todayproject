@@ -140,13 +140,66 @@ public function store(ProductCreateRequest $request)
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        $record = Product::find($id);
-        if($record){
-            $record->update($request->all());
-            return redirect()->route('admin.product.index')->with('success','Product Updated Successfully');
-        }
+{
+    $record = Product::find($id);
+
+    if (!$record) {
+        return redirect()->route('admin.product.index')
+            ->with('error', 'Product Not Found');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE PRODUCT
+    |--------------------------------------------------------------------------
+    */
+    $record->update([
+        'category_id' => $request->category_id,
+        'title'       => $request->title,
+        'slug'        => $request->slug,
+        'quantity'    => $request->quantity,
+        'price'       => $request->price,
+        'discount'    => $request->discount,
+        'description' => $request->description,
+        'status'      => $request->status,
+        'updated_by'  => Auth::id(),
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE ATTRIBUTES
+    |--------------------------------------------------------------------------
+    */
+    $syncData = [];
+
+    if ($request->has('attribute_id')) {
+
+        foreach ($request->attribute_id as $index => $attribute_id) {
+
+            // skip empty rows
+            if (empty($attribute_id)) {
+                continue;
+            }
+
+            $syncData[$attribute_id] = [
+                'values'     => $request->values[$index] ?? null,
+                'status'     => $request->attr_status[$index] ?? 0,
+                'updated_by' => Auth::id(),
+            ];
+        }
+
+        // sync updates pivot table
+        $record->attributes()->sync($syncData);
+    } else {
+
+        // remove all if none selected
+        $record->attributes()->detach();
+    }
+
+    return redirect()
+        ->route('admin.product.index')
+        ->with('success', 'Product Updated Successfully');
+}
 
     /**
      * Remove the specified resource from storage.

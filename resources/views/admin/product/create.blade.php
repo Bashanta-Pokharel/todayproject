@@ -122,7 +122,7 @@
                                             <th>Status</th>
                                             <th>
                                                 Action
-                                                <button type="button" class="btn btn-success btn-sm add-image float-right">+</button>
+                                                <button type="button" class="btn btn-success btn-sm add-image float-right">Add</button>
                                             </th>
                                         </tr>
                                         </thead>
@@ -136,7 +136,7 @@
                                                 <input type="radio" name="image_status[0]" value="0"> Inactive
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-danger btn-sm remove-image">-</button>
+                                                <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
                                             </td>
                                         </tr>
                                         </tbody>
@@ -157,7 +157,7 @@
                                             <th>Status</th>
                                             <th>
                                                 Action
-                                                <button type="button" class="btn btn-success btn-sm add-attribute float-right">+</button>
+                                                <button type="button" class="btn btn-success btn-sm add-attribute float-right">Add</button>
                                             </th>
                                         </tr>
                                         </thead>
@@ -182,7 +182,7 @@
                                             </td>
 
                                             <td>
-                                                <button type="button" class="btn btn-danger btn-sm remove-attribute">-</button>
+                                                <button type="button" class="btn btn-danger btn-sm remove-attribute">Remove</button>
                                             </td>
 
                                         </tr>

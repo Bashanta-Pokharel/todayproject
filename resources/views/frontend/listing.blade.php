@@ -1,46 +1,25 @@
 @extends('layouts.frontend')
-@section('title','Listing Page')
+@section('title','Home Page')
 @section('content')
-<div class="page-label">Page 2 — Product Listing</div>
-    <nav>
-        <div class="nav-logo">Ligne</div>
-        <div class="nav-links">
-            <a href="#">All</a><a href="#" class="active">Tops</a><a href="#">Bottoms</a><a href="#">Outerwear</a><a
-                href="#">Accessories</a>
-        </div>
-        <div class="nav-right">
-            <div class="search-box">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3" />
-                    <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-                </svg>
-                <input type="text" placeholder="Search styles…" />
-            </div>
-            <div class="nav-cart">Cart <span class="cart-badge">3</span></div>
-        </div>
-    </nav>
-
     <div class="listing-hero">
         <div>
-            <div class="listing-h">Tops</div>
-            <div style="font-size:13px;color:var(--charcoal-60);margin-top:4px;">24 items</div>
+            <div class="listing-h">{{$data['category']->title}}</div>
+            <div style="font-size:13px;color:var(--charcoal-60);margin-top:4px;">{{$data['category']->products()->where('status',1)->count()}} items</div>
         </div>
         <div class="listing-meta-row">
             <button class="sort-btn">Sort: Featured ↕</button>
         </div>
     </div>
-
     <div class="listing-layout">
         <!-- SIDEBAR -->
         <div class="listing-sidebar">
             <div>
                 <div class="sidebar-group-title">Category</div>
                 <div class="sidebar-filters">
-                    <div class="sidebar-filter-item">All <span class="count">72</span></div>
-                    <div class="sidebar-filter-item active">Tops <span class="count">24</span></div>
-                    <div class="sidebar-filter-item">Bottoms <span class="count">18</span></div>
-                    <div class="sidebar-filter-item">Outerwear <span class="count">12</span></div>
-                    <div class="sidebar-filter-item">Accessories <span class="count">18</span></div>
+                    <div class="sidebar-filter-item">All <span class="count">{{\App\Models\Product::where('status',1)->count()}}</span></div>
+                    @foreach($data['categories'] as $category)
+                        <div class="sidebar-filter-item @if($category->slug == $data['category']->slug) active @endif">{{$category->title}} <span class="count">24</span></div>
+                    @endforeach
                 </div>
             </div>
             <div>
@@ -90,80 +69,25 @@
                 <div class="clear-all">Clear all</div>
             </div>
             <div class="listing-products">
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <div class="product-badge">New</div>
-                        <div class="product-wish">♡</div>👔
+                @foreach($data['products'] as $product)
+                    <div class="product-card">
+                        <a href="{{route('frontend.details',$product->slug)}}">
+                            <div class="product-thumb">
+                                <div class="product-badge">New</div>
+                                <div class="product-wish">♡</div>
+                                <img src="{{asset('uploads/products/' . $product->images()->first()->image_name )}}" alt="">
+                            </div>
+                            <div class="product-name">{{$product->title}}</div>
+                            <div class="product-cat">{{$product->category->title}}</div>
+                            <div class="product-footer">
+                                <div><span class="product-price">Rs.{{$product->price}}</span></div><button class="add-to-cart">+ Add</button>
+                            </div>
+                        </a>
                     </div>
-                    <div class="product-name">Linen Shirt</div>
-                    <div class="product-cat">Tops</div>
-                    <div class="product-footer">
-                        <div><span class="product-price">$89</span></div><button class="add-to-cart">+ Add</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <div class="product-badge sale">Sale</div>
-                        <div class="product-wish">♡</div>🧶
-                    </div>
-                    <div class="product-name">Merino Cardigan</div>
-                    <div class="product-cat">Tops</div>
-                    <div class="product-footer">
-                        <div><span class="product-price">$145</span><span class="product-old-price">$175</span></div>
-                        <button class="add-to-cart">+ Add</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <div class="product-wish">♡</div>👕
-                    </div>
-                    <div class="product-name">Ribbed Tank</div>
-                    <div class="product-cat">Tops</div>
-                    <div class="product-footer">
-                        <div><span class="product-price">$45</span></div><button class="add-to-cart">+ Add</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <div class="product-badge">New</div>
-                        <div class="product-wish">♡</div>👘
-                    </div>
-                    <div class="product-name">Silk Blouse</div>
-                    <div class="product-cat">Tops</div>
-                    <div class="product-footer">
-                        <div><span class="product-price">$165</span></div><button class="add-to-cart">+ Add</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <div class="product-wish">♡</div>👔
-                    </div>
-                    <div class="product-name">Oversized Tee</div>
-                    <div class="product-cat">Tops</div>
-                    <div class="product-footer">
-                        <div><span class="product-price">$55</span></div><button class="add-to-cart">+ Add</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <div class="product-badge sale">Sale</div>
-                        <div class="product-wish">♡</div>🧥
-                    </div>
-                    <div class="product-name">Cotton Blazer</div>
-                    <div class="product-cat">Tops</div>
-                    <div class="product-footer">
-                        <div><span class="product-price">$198</span><span class="product-old-price">$240</span></div>
-                        <button class="add-to-cart">+ Add</button>
-                    </div>
-                </div>
+                @endforeach
             </div>
-            <div class="pagination">
-                <button class="page-btn">‹</button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">›</button>
-            </div>
+            {{$data['category']->products()->paginate(2)}}
         </div>
     </div>
 @endsection
+

@@ -194,7 +194,7 @@
 
                                     @foreach(\App\Models\Attribute::all() as $attribute)
                                         <option value="{{ $attribute->id }}"
-                                            {{ $attribute->id == $attr->id ? 'selected' : '' }}>
+                                            {{ $attribute->id == $attr->pivot->attribute_id ? 'selected' : '' }}>
                                             {{ $attribute->title }}
                                         </option>
                                     @endforeach
