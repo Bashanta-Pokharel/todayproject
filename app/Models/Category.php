@@ -2,18 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-    #[Fillable(['title', 'slug', 'rank', 'status', 'created_by', 'updated_by'])]
-    class Category extends Model
+
+class Category extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'title',
+        'slug',
+        'rank',
+        'status',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected function casts(): array
     {
-        use SoftDeletes;
-
-        protected $fillable = ['title', 'slug', 'rank', 'status', 'created_by', 'updated_by'];
-        public function products(){
-        return $this->hasMany(Product::class,'category_id','id');
+        return [
+            'rank' => 'integer',
+            'status' => 'boolean',
+        ];
     }
-    }
-    
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
+}

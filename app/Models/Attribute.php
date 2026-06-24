@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Attribute extends Model
@@ -13,27 +14,29 @@ class Attribute extends Model
         'title',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
-    /*
-    |-----------------------------------
-    | PRODUCTS RELATION (FIXED)
-    |-----------------------------------
-    */
-    public function products()
+    protected function casts(): array
+    {
+        return [
+            'status' => 'boolean',
+        ];
+    }
+
+    public function products(): BelongsToMany
     {
         return $this->belongsToMany(
-                Product::class,
-                'attribute_product',   // ✅ pivot table
-                'attribute_id',        // ✅ this model key
-                'product_id'           // ✅ related model key
-            )
+            Product::class,
+            'attribute_product',
+            'attribute_id',
+            'product_id'
+        )
             ->withPivot([
                 'values',
                 'status',
                 'created_by',
-                'updated_by'
+                'updated_by',
             ])
             ->withTimestamps();
     }

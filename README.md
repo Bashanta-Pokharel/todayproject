@@ -1,58 +1,118 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Today Project E-Commerce
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel e-commerce platform with catalog browsing, customer authentication, cart, checkout, payment gateway handoff, order tracking, admin analytics, inventory management, reviews, wishlist, coupons, and responsive storefront UI.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3 or newer
+- Composer
+- Node.js and npm
+- MySQL or SQLite
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+For local development:
 
-## Contributing
+```bash
+composer run dev
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Environment Variables
 
-## Code of Conduct
+Configure the normal Laravel database, mail, cache, queue, and session variables in `.env`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Payment settings:
 
-## Security Vulnerabilities
+```dotenv
+PAYMENT_DEFAULT_CURRENCY=NPR
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+ESEWA_ENABLED=true
+ESEWA_SANDBOX=true
+ESEWA_PRODUCT_CODE=EPAYTEST
+ESEWA_SECRET_KEY="8gBm/:&EnhH.1/q"
+ESEWA_PAYMENT_URL=https://rc-epay.esewa.com.np/api/epay/main/v2/form
+ESEWA_STATUS_URL=https://rc.esewa.com.np/api/epay/transaction/status/
 
-## License
+KHALTI_ENABLED=false
+KHALTI_SECRET_KEY=
+KHALTI_BASE_URL=https://dev.khalti.com/api/v2
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+PAYPAL_ENABLED=false
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+PAYPAL_CURRENCY=USD
+
+STRIPE_ENABLED=false
+STRIPE_SECRET_KEY=
+STRIPE_BASE_URL=https://api.stripe.com/v1
+STRIPE_CURRENCY=usd
+```
+
+Cash on Delivery works without external keys. eSewa test mode works with the sandbox defaults above. Enable Khalti, PayPal, and Stripe only after adding valid developer keys.
+
+## Default Admin
+
+The database seeder creates:
+
+- Email: `test@example.com`
+- Password: `password`
+- Role: `admin`
+
+Existing admin users must have `role = admin` in the `users` table to access `/admin`.
+
+## Main Routes
+
+- Storefront: `/`
+- Category listing: `/listing/{slug}`
+- Product detail: `/details/{slug}`
+- Cart: `/cart`
+- Customer login: `/customer/login`
+- Customer dashboard: `/customer/dashboard`
+- Checkout: `/customer/checkout`
+- Admin dashboard: `/admin`
+- Admin orders: `/admin/orders`
+- Product management: `/admin/product`
+- Category management: `/admin/category`
+- Attribute management: `/admin/attribute`
+
+## Project Structure
+
+- `app/Http/Controllers/Frontend` handles catalog, cart, checkout, wishlist, reviews, and payment callbacks.
+- `app/Http/Controllers/Admin` handles admin dashboard, products, categories, attributes, and orders.
+- `app/Models` contains catalog, customer, order, payment, coupon, review, and wishlist models.
+- `app/Services` contains cart total calculation and payment gateway clients.
+- `resources/views/frontend` contains storefront pages.
+- `resources/views/admin` contains admin pages.
+- `database/migrations` defines commerce schema.
+
+## Testing
+
+```bash
+php artisan test --compact
+```
+
+Format PHP before committing:
+
+```bash
+vendor/bin/pint --dirty --format agent
+```
+
+## Deployment
+
+1. Set production `.env` values: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`, database, mail, queue, session, and payment keys.
+2. Install optimized dependencies: `composer install --no-dev --optimize-autoloader`.
+3. Build frontend assets: `npm ci && npm run build`.
+4. Run migrations: `php artisan migrate --force`.
+5. Cache production config: `php artisan config:cache`, `php artisan route:cache`, and `php artisan view:cache`.
+6. Run a queue worker if queued mail/payment notifications are added later.
+7. Point the web server document root to `public/`.

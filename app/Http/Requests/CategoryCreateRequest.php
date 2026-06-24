@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Http\Requests;
+
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryCreateRequest extends FormRequest
 {
@@ -22,9 +24,16 @@ class CategoryCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'  => 'required|string|min:3|max:255',
-            'rank' =>  'required|numeric|min:1|max:100',
-            'slug'   => 'required|string|min:3|max:255|unique:categories',
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'rank' => ['required', 'integer', 'min:1', 'max:100'],
+            'slug' => [
+                'required',
+                'string',
+                'min:3',
+                'max:255',
+                Rule::unique('categories', 'slug')->ignore($this->route('category')),
+            ],
+            'status' => ['required', 'boolean'],
         ];
     }
 }

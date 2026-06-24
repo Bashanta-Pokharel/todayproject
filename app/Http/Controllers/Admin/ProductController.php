@@ -4,15 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductCreateRequest;
-use App\Http\Requests\CategoryCreateRequest;
 use App\Models\Attribute;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
-use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
-
 
 class ProductController extends Controller
 {
@@ -21,8 +19,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $data['records'] = Product::all();
-        return view('admin.product.index',compact('data'));
+        $data['records'] = Product::with(['category', 'images'])
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.product.index', compact('data'));
     }
 
     /**
@@ -30,98 +31,53 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $data['attributes'] = Attribute::all();
-        $data['categories'] = Category::all();
-        return view('admin.product.create',compact('data'));
+        $data['attributes'] = Attribute::orderBy('title')->get();
+        $data['categories'] = Category::orderBy('title')->get();
+
+        return view('admin.product.create', compact('data'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-public function store(ProductCreateRequest $request)
-{
-    // Add created_by
-    $request->merge([
-        'created_by' => Auth::id()
-    ]);
+    public function store(ProductCreateRequest $request)
+    {
+        $validated = $request->validated();
+        $validated['created_by'] = Auth::id();
+        $validated['discount'] = $validated['discount'] ?? 0;
 
-    // Create product
-    $product = Product::create($request->only([
-        'category_id',
-        'title',
-        'slug',
-        'quantity',
-        'price',
-        'discount',
-        'description',
-        'status',
-        'created_by'
-    ]));
+        $product = Product::create(collect($validated)->only([
+            'category_id',
+            'title',
+            'slug',
+            'quantity',
+            'price',
+            'discount',
+            'description',
+            'status',
+            'created_by',
+        ])->all());
 
-    /*
-    |-----------------------------------
-    | IMAGE UPLOAD
-    |-----------------------------------
-    */
-    if ($request->hasFile('image_name')) {
+        $this->storeImages($request, $product);
+        $this->syncAttributes($request, $product, false);
 
-        foreach ($request->file('image_name') as $index => $file) {
-
-            if ($file && $file->isValid()) {
-
-                $imageName = time().'_'.$index.'.'.$file->getClientOriginalExtension();
-
-                $file->move(public_path('uploads/products'), $imageName);
-
-                ProductImage::create([
-                    'product_id'  => $product->id,
-                    'image_name'  => $imageName,
-                    'image_title' => $request->image_title[$index] ?? null,
-                    'status'      => $request->image_status[$index] ?? 0,
-                    'created_by'  => Auth::id(),
-                ]);
-            }
-        }
+        return redirect()
+            ->route('admin.product.index')
+            ->with('success', 'Product created successfully.');
     }
-
-    /*
-    |-----------------------------------
-    | ATTRIBUTES (FIXED)
-    |-----------------------------------
-    */
-    if ($request->has('attribute_id')) {
-
-        foreach ($request->attribute_id as $index => $attribute_id) {
-
-            // 🚨 skip empty rows
-            if (empty($attribute_id)) {
-                continue;
-            }
-
-            $product->attributes()->attach($attribute_id, [
-                'values'     => $request->values[$index] ?? null,
-                'status'     => $request->attr_status[$index] ?? 0,
-                'created_by' => Auth::id(),
-            ]);
-        }
-    }
-
-    return redirect()
-        ->route('admin.product.index')
-        ->with('success', 'Product Created Successfully');
-}
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $record = Product::with(['category','images','attributes'])->find($id);
+        $record = Product::with(['category', 'images', 'attributes'])->find($id);
 
-        if(!$record){
-            return redirect()->route('admin.product.index')->with('error','Product Not Found');
+        if (! $record) {
+            return redirect()->route('admin.product.index')->with('error', 'Product not found.');
         }
-        return view('admin.product.show',compact('record'));
+
+        return view('admin.product.show', compact('record'));
     }
 
     /**
@@ -129,77 +85,52 @@ public function store(ProductCreateRequest $request)
      */
     public function edit(string $id)
     {
-        $record = Product::find($id);
-        if(!$record){
-            return redirect()->route('admin.product.index')->with('error','Product Not Found');
+        $record = Product::with(['images', 'attributes'])->find($id);
+
+        if (! $record) {
+            return redirect()->route('admin.product.index')->with('error', 'Product not found.');
         }
-        return view('admin.product.edit',compact('record'));
+
+        $data['attributes'] = Attribute::orderBy('title')->get();
+        $data['categories'] = Category::orderBy('title')->get();
+
+        return view('admin.product.edit', compact('record', 'data'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-{
-    $record = Product::find($id);
+    public function update(ProductCreateRequest $request, string $id)
+    {
+        $record = Product::find($id);
 
-    if (!$record) {
-        return redirect()->route('admin.product.index')
-            ->with('error', 'Product Not Found');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | UPDATE PRODUCT
-    |--------------------------------------------------------------------------
-    */
-    $record->update([
-        'category_id' => $request->category_id,
-        'title'       => $request->title,
-        'slug'        => $request->slug,
-        'quantity'    => $request->quantity,
-        'price'       => $request->price,
-        'discount'    => $request->discount,
-        'description' => $request->description,
-        'status'      => $request->status,
-        'updated_by'  => Auth::id(),
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | UPDATE ATTRIBUTES
-    |--------------------------------------------------------------------------
-    */
-    $syncData = [];
-
-    if ($request->has('attribute_id')) {
-
-        foreach ($request->attribute_id as $index => $attribute_id) {
-
-            // skip empty rows
-            if (empty($attribute_id)) {
-                continue;
-            }
-
-            $syncData[$attribute_id] = [
-                'values'     => $request->values[$index] ?? null,
-                'status'     => $request->attr_status[$index] ?? 0,
-                'updated_by' => Auth::id(),
-            ];
+        if (! $record) {
+            return redirect()->route('admin.product.index')
+                ->with('error', 'Product not found.');
         }
 
-        // sync updates pivot table
-        $record->attributes()->sync($syncData);
-    } else {
+        $validated = $request->validated();
+        $validated['updated_by'] = Auth::id();
+        $validated['discount'] = $validated['discount'] ?? 0;
 
-        // remove all if none selected
-        $record->attributes()->detach();
+        $record->update(collect($validated)->only([
+            'category_id',
+            'title',
+            'slug',
+            'quantity',
+            'price',
+            'discount',
+            'description',
+            'status',
+            'updated_by',
+        ])->all());
+
+        $this->syncAttributes($request, $record, true);
+
+        return redirect()
+            ->route('admin.product.index')
+            ->with('success', 'Product updated successfully.');
     }
-
-    return redirect()
-        ->route('admin.product.index')
-        ->with('success', 'Product Updated Successfully');
-}
 
     /**
      * Remove the specified resource from storage.
@@ -207,43 +138,52 @@ public function store(ProductCreateRequest $request)
     public function destroy(string $id)
     {
         $record = Product::find($id);
+
+        if (! $record) {
+            return redirect()->route('admin.product.index')->with('error', 'Product not found.');
+        }
+
         $record->delete();
-        return redirect()->route('admin.product.index')->with('success','Product Deleted  Successfully');
+
+        return redirect()->route('admin.product.index')->with('success', 'Product deleted successfully.');
     }
 
     public function trashed()
     {
-        $data['records'] = Product::onlyTrashed()->get();
-        return view('admin.product.trashed',compact('data'));
+        $data['records'] = Product::onlyTrashed()->latest()->get();
+
+        return view('admin.product.trashed', compact('data'));
     }
 
-    public function restore($id){
+    public function restore($id)
+    {
         $record = Product::onlyTrashed()->findOrFail($id);
         $record->restore();
-        return redirect()->route('admin.product.index')->with('success','Product Restored  Successfully');
+
+        return redirect()->route('admin.product.index')->with('success', 'Product restored successfully.');
     }
 
-    public function forceDelete($id){
+    public function forceDelete($id)
+    {
         $record = Product::onlyTrashed()->findOrFail($id);
         $record->forceDelete();
-        return redirect()->route('admin.product.trashed')->with('success','Product Permanently Deleted  Successfully');
+
+        return redirect()->route('admin.product.trashed')->with('success', 'Product permanently deleted successfully.');
     }
 
     public function deleteImage($id)
     {
         $image = ProductImage::find($id);
 
-        if (!$image) {
+        if (! $image) {
             return redirect()->back()->with('error', 'Image not found');
         }
 
-        // Delete file from folder
-        $path = public_path('uploads/products/' . $image->image_name);
+        $path = public_path('uploads/products/'.$image->image_name);
         if (File::exists($path)) {
             File::delete($path);
         }
 
-        // Delete DB record
         $image->delete();
 
         return redirect()->back()->with('success', 'Image deleted successfully');
@@ -264,29 +204,32 @@ public function store(ProductCreateRequest $request)
         $product = Product::findOrFail($productId);
 
         $request->validate([
-            'attribute_id' => 'required',
-            'value' => 'required'
+            'attribute_id' => ['required', 'exists:attributes,id'],
+            'value' => ['required', 'string', 'max:1000'],
+            'status' => ['nullable', 'boolean'],
         ]);
 
-        $product->attributes()->attach($request->attribute_id, [
-            'values' => $request->value,
-            'status' => $request->status ?? 1,
-            'created_by' => Auth::user()->id
+        $product->attributes()->syncWithoutDetaching([
+            $request->attribute_id => [
+                'values' => $request->value,
+                'status' => $request->status ?? 1,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ],
         ]);
 
         return redirect()->back()->with('success', 'Attribute added');
     }
+
     public function addImage(Request $request, $id)
-{
-    $product = Product::findOrFail($id);
+    {
+        $product = Product::findOrFail($id);
 
-    $request->validate([
-        'image_name' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-        'image_title' => 'nullable|string',
-        'status' => 'required'
-    ]);
-
-    if ($request->hasFile('image_name')) {
+        $request->validate([
+            'image_name' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'image_title' => 'nullable|string|max:255',
+            'status' => 'required|boolean',
+        ]);
 
         $file = $request->file('image_name');
 
@@ -295,14 +238,63 @@ public function store(ProductCreateRequest $request)
         $file->move(public_path('uploads/products'), $imageName);
 
         ProductImage::create([
-            'product_id'  => $product->id,
-            'image_name'  => $imageName,
+            'product_id' => $product->id,
+            'image_name' => $imageName,
             'image_title' => $request->image_title,
-            'status'      => $request->status,
-            'created_by'  => Auth::id(),
+            'status' => $request->status,
+            'created_by' => Auth::id(),
         ]);
+
+        return redirect()->back()->with('success', 'Image added successfully');
     }
 
-    return redirect()->back()->with('success', 'Image added successfully');
-}
+    private function storeImages(ProductCreateRequest $request, Product $product): void
+    {
+        if (! $request->hasFile('image_name')) {
+            return;
+        }
+
+        foreach ($request->file('image_name') as $index => $file) {
+            if (! $file || ! $file->isValid()) {
+                continue;
+            }
+
+            $imageName = time().'_'.$index.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('uploads/products'), $imageName);
+
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_name' => $imageName,
+                'image_title' => $request->image_title[$index] ?? null,
+                'status' => $request->image_status[$index] ?? 0,
+                'created_by' => Auth::id(),
+            ]);
+        }
+    }
+
+    private function syncAttributes(Request $request, Product $product, bool $detachMissing): void
+    {
+        $syncData = [];
+
+        foreach ($request->input('attribute_id', []) as $index => $attributeId) {
+            if (! $attributeId) {
+                continue;
+            }
+
+            $syncData[$attributeId] = [
+                'values' => $request->input("values.{$index}"),
+                'status' => $request->input("attr_status.{$index}", 0),
+                'created_by' => $product->exists ? $product->created_by : Auth::id(),
+                'updated_by' => Auth::id(),
+            ];
+        }
+
+        if ($detachMissing) {
+            $product->attributes()->sync($syncData);
+
+            return;
+        }
+
+        $product->attributes()->attach($syncData);
+    }
 }

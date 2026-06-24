@@ -1,93 +1,53 @@
 @extends('layouts.frontend')
-@section('title','Home Page')
-@section('content')
-    <div class="listing-hero">
-        <div>
-            <div class="listing-h">{{$data['category']->title}}</div>
-            <div style="font-size:13px;color:var(--charcoal-60);margin-top:4px;">{{$data['category']->products()->where('status',1)->count()}} items</div>
-        </div>
-        <div class="listing-meta-row">
-            <button class="sort-btn">Sort: Featured ↕</button>
-        </div>
-    </div>
-    <div class="listing-layout">
-        <!-- SIDEBAR -->
-        <div class="listing-sidebar">
-            <div>
-                <div class="sidebar-group-title">Category</div>
-                <div class="sidebar-filters">
-                    <div class="sidebar-filter-item">All <span class="count">{{\App\Models\Product::where('status',1)->count()}}</span></div>
-                    @foreach($data['categories'] as $category)
-                        <div class="sidebar-filter-item @if($category->slug == $data['category']->slug) active @endif">{{$category->title}} <span class="count">24</span></div>
-                    @endforeach
-                </div>
-            </div>
-            <div>
-                <div class="sidebar-group-title">Price</div>
-                <div class="price-range">
-                    <input class="price-input" type="text" placeholder="$0" />
-                    <input class="price-input" type="text" placeholder="$500" />
-                </div>
-            </div>
-            <div>
-                <div class="sidebar-group-title">Size</div>
-                <div class="size-grid">
-                    <div class="size-chip">XS</div>
-                    <div class="size-chip active">S</div>
-                    <div class="size-chip active">M</div>
-                    <div class="size-chip">L</div>
-                    <div class="size-chip">XL</div>
-                    <div class="size-chip">XXL</div>
-                </div>
-            </div>
-            <div>
-                <div class="sidebar-group-title">Colour</div>
-                <div class="color-options" style="flex-wrap:wrap;gap:10px;margin-top:8px;">
-                    <div class="color-dot selected" style="background:#e8e0d5;"></div>
-                    <div class="color-dot" style="background:#2c2c28;"></div>
-                    <div class="color-dot" style="background:#8b6f5c;"></div>
-                    <div class="color-dot" style="background:#c4bba8;"></div>
-                    <div class="color-dot" style="background:#b0b8a8;"></div>
-                    <div class="color-dot" style="background:#d4c5b0;"></div>
-                </div>
-            </div>
-            <div>
-                <div class="sidebar-group-title">Availability</div>
-                <div class="sidebar-filters">
-                    <div class="sidebar-filter-item active">In stock <span class="count">20</span></div>
-                    <div class="sidebar-filter-item">Pre-order <span class="count">4</span></div>
-                </div>
-            </div>
-        </div>
 
-        <!-- MAIN GRID -->
-        <div class="listing-main">
-            <div class="active-filters">
-                <div class="active-filter-tag">Tops <span>×</span></div>
-                <div class="active-filter-tag">Size: S, M <span>×</span></div>
-                <div class="active-filter-tag">In stock <span>×</span></div>
-                <div class="clear-all">Clear all</div>
-            </div>
-            <div class="listing-products">
-                @foreach($data['products'] as $product)
-                    <div class="product-card">
-                        <a href="{{route('frontend.details',$product->slug)}}">
-                            <div class="product-thumb">
-                                <div class="product-badge">New</div>
-                                <div class="product-wish">♡</div>
-                                <img src="{{asset('uploads/products/' . $product->images()->first()->image_name )}}" alt="">
-                            </div>
-                            <div class="product-name">{{$product->title}}</div>
-                            <div class="product-cat">{{$product->category->title}}</div>
-                            <div class="product-footer">
-                                <div><span class="product-price">Rs.{{$product->price}}</span></div><button class="add-to-cart">+ Add</button>
-                            </div>
-                        </a>
-                    </div>
+@section('title', $data['category']->title.' Products')
+
+@section('content')
+<div class="listing-hero">
+    <div>
+        <div class="listing-h">{{ $data['category']->title }}</div>
+        <div class="section-sub">{{ $data['products']->total() }} item(s)</div>
+    </div>
+</div>
+
+<div class="listing-layout">
+    <aside class="listing-sidebar">
+        <div>
+            <div class="sidebar-group-title">Category</div>
+            <div class="sidebar-filters">
+                <a href="{{ route('frontend.index') }}" class="sidebar-filter-item">All <span class="count">{{ $data['categories']->sum('products_count') }}</span></a>
+                @foreach($data['categories'] as $category)
+                    <a href="{{ route('frontend.listing', $category->slug) }}" @class(['sidebar-filter-item', 'active' => $category->id === $data['category']->id])>
+                        {{ $category->title }} <span class="count">{{ $category->products_count }}</span>
+                    </a>
                 @endforeach
             </div>
-            {{$data['category']->products()->paginate(2)}}
         </div>
-    </div>
-@endsection
+    </aside>
 
+    <section class="listing-main">
+        <form class="catalog-toolbar compact" method="GET" action="{{ route('frontend.listing', $data['category']->slug) }}">
+            <input type="search" name="q" value="{{ $data['filters']['q'] ?? '' }}" placeholder="Search in {{ $data['category']->title }}">
+            <input type="number" name="min_price" value="{{ $data['filters']['min_price'] ?? '' }}" placeholder="Min price" min="0">
+            <input type="number" name="max_price" value="{{ $data['filters']['max_price'] ?? '' }}" placeholder="Max price" min="0">
+            <select name="sort">
+                <option value="">Featured</option>
+                <option value="newest" @selected(($data['filters']['sort'] ?? '') === 'newest')>Newest</option>
+                <option value="price_asc" @selected(($data['filters']['sort'] ?? '') === 'price_asc')>Price: low to high</option>
+                <option value="price_desc" @selected(($data['filters']['sort'] ?? '') === 'price_desc')>Price: high to low</option>
+            </select>
+            <button class="btn-primary" type="submit">Filter</button>
+        </form>
+
+        <div class="listing-products">
+            @forelse($data['products'] as $product)
+                @include('frontend.partials.product-card', ['product' => $product])
+            @empty
+                <div class="empty-state">No products found in this category.</div>
+            @endforelse
+        </div>
+
+        <div class="pagination-wrap">{{ $data['products']->links() }}</div>
+    </section>
+</div>
+@endsection

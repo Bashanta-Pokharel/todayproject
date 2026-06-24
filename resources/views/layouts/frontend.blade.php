@@ -1,90 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@yield('title')</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-        rel="stylesheet" />
-    <link href="{{asset('assets/frontend/style.css')}}" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="@yield('meta_description', 'Shop curated products with secure checkout, order tracking, and fast delivery.')">
+    <title>@yield('title', 'Ligne Store')</title>
+    <link href="{{ asset('assets/frontend/style.css') }}" rel="stylesheet">
 </head>
 <body>
-<!-- ==================== -->
-<!--   NAVIGATION (shared) -->
-<!-- ==================== -->
-<nav>
-    <div class="nav-logo">Ligne</div>
+<div class="promo-banner">
+    Secure checkout, verified payments, and free delivery on orders over Rs. 5,000.
+</div>
+
+<nav class="site-nav">
+    <a class="nav-logo" href="{{ route('frontend.index') }}">Ligne</a>
+
     <div class="nav-links">
-        <a href="{{route('frontend.index')}}">Home</a>
-        <!-- limit to 5
-          -->
-
-       @foreach($data['categories']->take(7) as $category)
-    <a href="{{ route('frontend.listing', $category->slug) }}" class="active">
-        {{ $category->title }}
-    </a>
-@endforeach
-
+        <a href="{{ route('frontend.index') }}" @class(['active' => request()->routeIs('frontend.index')])>Shop</a>
+        @foreach(collect($data['categories'] ?? [])->take(4) as $category)
+            <a href="{{ route('frontend.listing', $category->slug) }}" @class(['active' => request()->is('listing/'.$category->slug)])>
+                {{ $category->title }}
+            </a>
+        @endforeach
     </div>
+
     <div class="nav-right">
-        <div class="search-box">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3" />
-                <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-            </svg>
-            <input type="text" placeholder="Search styles…" />
-        </div>
-        <div class="nav-cart">
-            Cart <span class="cart-badge">3</span>
+        <form class="search-box" action="{{ route('frontend.index') }}" method="GET">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products">
+        </form>
+
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">◐</button>
+
+        <a class="nav-cart" href="{{ route('frontend.cart') }}">
+            Cart <span class="cart-badge">{{ \Cart::getTotalQuantity() }}</span>
+        </a>
+
+        <div class="nav-auth">
+            @auth('customer')
+                <a href="{{ route('customer.dashboard') }}">{{ auth('customer')->user()->name }}</a>
+                <form method="POST" action="{{ route('customer.logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('customer.login') }}">Login</a>
+                <a href="{{ route('customer.register') }}" class="nav-cta">Register</a>
+            @endauth
         </div>
     </div>
 </nav>
-<!-- ============================== -->
-<!--   PAGE 1 — HOME               -->
-<!-- ============================== -->
-@yield('content')
-<!-- FOOTER -->
+
+@if(session('success'))
+    <div class="flash flash-success">{{ session('success') }}</div>
+@endif
+
+@if($errors->any())
+    <div class="flash flash-error">
+        @foreach($errors->all() as $error)
+            <div>{{ $error }}</div>
+        @endforeach
+    </div>
+@endif
+
+<main>
+    @yield('content')
+</main>
+
 <footer class="footer">
     <div>
         <div class="footer-brand">Ligne</div>
-        <div class="footer-desc">Elevated basics for modern life. We design with intention, source with care, and
-            ship to
-            40+ countries.</div>
+        <div class="footer-desc">A modern commerce experience with curated products, secure payments, and thoughtful service.</div>
     </div>
     <div>
         <div class="footer-col-title">Shop</div>
         <div class="footer-links">
-            <a href="#">New Arrivals</a>
-            <a href="#">Tops</a>
-            <a href="#">Bottoms</a>
-            <a href="#">Outerwear</a>
-            <a href="#">Accessories</a>
+            <a href="{{ route('frontend.index') }}">All Products</a>
+            <a href="{{ route('frontend.cart') }}">Cart</a>
+            @auth('customer')
+                <a href="{{ route('customer.wishlist') }}">Wishlist</a>
+                <a href="{{ route('customer.dashboard') }}">Orders</a>
+            @endauth
         </div>
     </div>
     <div>
         <div class="footer-col-title">Help</div>
         <div class="footer-links">
-            <a href="#">Shipping & Returns</a>
-            <a href="#">Size Guide</a>
-            <a href="#">FAQ</a>
-            <a href="#">Contact Us</a>
+            <a href="{{ route('frontend.index') }}#faq">FAQ</a>
+            <a href="{{ route('frontend.index') }}#contact">Contact</a>
+            <a href="{{ route('frontend.index') }}#about">About Us</a>
         </div>
     </div>
     <div>
-        <div class="footer-col-title">Company</div>
-        <div class="footer-links">
-            <a href="#">Our Story</a>
-            <a href="#">Sustainability</a>
-            <a href="#">Careers</a>
-            <a href="#">Press</a>
-        </div>
+        <div class="footer-col-title">Newsletter</div>
+        <form class="newsletter-form" action="{{ route('frontend.index') }}" method="GET">
+            <input type="email" placeholder="Email address" aria-label="Email address">
+            <button type="submit">Join</button>
+        </form>
     </div>
 </footer>
 <div class="footer-bottom">
-    <span>© 2026 Ligne. All rights reserved.</span>
+    <span>© {{ date('Y') }} Ligne. All rights reserved.</span>
     <span>Privacy · Terms · Accessibility</span>
 </div>
-</body>
 
+<script>
+    const toggle = document.querySelector('[data-theme-toggle]');
+    const storedTheme = localStorage.getItem('theme');
+
+    if (storedTheme === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+    }
+
+    toggle?.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem('theme', nextTheme);
+    });
+</script>
+</body>
 </html>

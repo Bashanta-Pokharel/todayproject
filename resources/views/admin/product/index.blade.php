@@ -62,9 +62,7 @@
 
                             <!-- Created By -->
                             <td>
-                                @if($record->created_by)
-                                    {{ App\Models\User::find($record->created_by)->name }}
-                                @endif
+                                {{ optional(App\Models\User::find($record->created_by))->name ?? 'N/A' }}
                             </td>
 
                             <td>{{ $record->created_at }}</td>
@@ -92,6 +90,8 @@
                         @endforeach
 
                     </table>
+
+                    {{ $data['records']->links() }}
 
                     <!-- Create button bottom -->
                     <a href="{{ route('admin.product.create') }}" class="btn btn-primary">

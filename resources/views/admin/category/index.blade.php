@@ -44,9 +44,7 @@
                             @endif
                         </td>
                         <td>
-                        @if($record->created_by)
-                        {{App\Models\User::find($record->created_by)->name}}
-                        @endif
+                        {{ optional(App\Models\User::find($record->created_by))->name ?? 'N/A' }}
                         </td>
                         <td>{{$record->created_at}}</td>
                         <td>
@@ -58,11 +56,11 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this category?')">Delete</button>
+                          </form>
                         </td>
                     </tr>
                     @endforeach
                 </table>  
-                  <!-create linker-!>
                   <a href="{{ route('admin.category.create') }}" class="btn btn-primary">Create Category</a>
             </div>
         </div>

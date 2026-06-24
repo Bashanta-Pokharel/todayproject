@@ -1,171 +1,100 @@
 @extends('layouts.frontend')
 
-@section('title','Home Page')
+@section('title', 'Ligne Store')
+@section('meta_description', 'Shop curated products with search, filters, secure checkout, wishlist, and order tracking.')
 
 @section('content')
+<section class="hero">
+    <div class="hero-text">
+        <div class="hero-eyebrow">Modern marketplace</div>
+        <h1 class="hero-h">Curated products for everyday shopping.</h1>
+        <p class="hero-sub">Search, compare, wishlist, and checkout securely with eSewa, PayPal, Khalti, Stripe test mode, or cash on delivery.</p>
+        <div class="hero-actions">
+            <a href="#products" class="btn-primary">Shop now</a>
+            <a href="#about" class="btn-outline">About us</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        @if(($data['featuredProducts'] ?? collect())->first()?->images->first())
+            <img src="{{ asset('uploads/products/'.$data['featuredProducts']->first()->images->first()->image_name) }}" alt="Featured product">
+        @else
+            <div class="hero-placeholder">Ligne</div>
+        @endif
+    </div>
+</section>
 
-<div class="listing-hero">
+<section class="categories-section">
+    <div class="section-header">
+        <div class="section-title">Shop by category</div>
+        <a href="#products" class="section-link">View products</a>
+    </div>
+    <div class="category-grid">
+        @foreach($data['categories'] as $category)
+            <a class="category-card" href="{{ route('frontend.listing', $category->slug) }}">
+                <span class="cat-name">{{ $category->title }}</span>
+                <span class="cat-count">{{ $category->products_count }} products</span>
+            </a>
+        @endforeach
+    </div>
+</section>
+
+<section class="products-section" id="products">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All products</div>
+            <div class="section-sub">{{ $data['products']->total() }} item(s) available</div>
+        </div>
+    </div>
+
+    <form class="catalog-toolbar" method="GET" action="{{ route('frontend.index') }}">
+        <input type="search" name="q" value="{{ $data['filters']['q'] ?? '' }}" placeholder="Search products">
+        <input type="number" name="min_price" value="{{ $data['filters']['min_price'] ?? '' }}" placeholder="Min price" min="0">
+        <input type="number" name="max_price" value="{{ $data['filters']['max_price'] ?? '' }}" placeholder="Max price" min="0">
+        <select name="sort">
+            <option value="">Featured</option>
+            <option value="newest" @selected(($data['filters']['sort'] ?? '') === 'newest')>Newest</option>
+            <option value="price_asc" @selected(($data['filters']['sort'] ?? '') === 'price_asc')>Price: low to high</option>
+            <option value="price_desc" @selected(($data['filters']['sort'] ?? '') === 'price_desc')>Price: high to low</option>
+        </select>
+        <button class="btn-primary" type="submit">Filter</button>
+    </form>
+
+    <div class="product-grid">
+        @forelse($data['products'] as $product)
+            @include('frontend.partials.product-card', ['product' => $product])
+        @empty
+            <div class="empty-state">No products matched your filters.</div>
+        @endforelse
+    </div>
+
+    <div class="pagination-wrap">{{ $data['products']->links() }}</div>
+</section>
+
+<section class="trust-band" id="about">
     <div>
-        <div class="listing-h">All Products</div>
-        <div style="font-size:13px;color:var(--charcoal-60);margin-top:4px;">
-            {{ \App\Models\Product::where('status',1)->count() }} items available
-        </div>
+        <h2>Built for confident shopping</h2>
+        <p>Every order is stored with transaction history, stock movement, and customer details so support and fulfillment stay organized.</p>
     </div>
-
-    <div class="listing-meta-row">
-        <button class="sort-btn">Sort: Featured ↕</button>
+    <div class="trust-grid">
+        <div><strong>Secure</strong><span>CSRF protected checkout and verified payment callbacks.</span></div>
+        <div><strong>Responsive</strong><span>Designed for mobile, tablet, and desktop shopping.</span></div>
+        <div><strong>Trackable</strong><span>Customers can see recent orders from their dashboard.</span></div>
     </div>
-</div>
+</section>
 
-<div class="listing-layout">
-
-    <!-- SIDEBAR -->
-    <div class="listing-sidebar">
-
-        <div>
-            <div class="sidebar-group-title">Category</div>
-
-            <div class="sidebar-filters">
-
-                <div class="sidebar-filter-item">
-                    All
-                    <span class="count">
-                        {{ \App\Models\Product::where('status',1)->count() }}
-                    </span>
-                </div>
-
-                @foreach($data['categories'] as $category)
-
-                    <a href="{{ route('frontend.listing',$category->slug) }}"
-                       class="sidebar-filter-item">
-
-                        {{ $category->title }}
-
-                        <span class="count">
-                            {{ $category->products()->where('status',1)->count() }}
-                        </span>
-
-                    </a>
-
-                @endforeach
-
-            </div>
-        </div>
-
-        <!-- PRICE -->
-        <div>
-            <div class="sidebar-group-title">Price</div>
-
-            <div class="price-range">
-                <input class="price-input" type="text" placeholder="$0">
-                <input class="price-input" type="text" placeholder="$500">
-            </div>
-        </div>
-
-    </div>
-
-    <!-- MAIN -->
-    <div class="listing-main">
-
-        <div class="active-filters">
-            <div class="active-filter-tag">Home <span>×</span></div>
-            <div class="clear-all">Clear all</div>
-        </div>
-
-        <div class="listing-products">
-
-            {{-- SAFE CHECK (IMPORTANT FIX) --}}
-            @if(!empty($data['products']) && count($data['products']))
-
-                @foreach($data['products'] as $product)
-
-                    <div class="product-card">
-
-                        <a href="{{ route('frontend.details',$product->slug) }}">
-
-                            <div class="product-thumb">
-
-                                @if($product->images->first())
-                                    <img src="{{ asset('uploads/products/' . $product->images->first()->image_name) }}">
-                                @else
-                                    <div style="font-size:40px;">📦</div>
-                                @endif
-
-                                <div class="product-wish">♡</div>
-
-                            </div>
-
-                            <div class="product-name">
-                                {{ $product->title }}
-                            </div>
-
-                            <div class="product-cat">
-                                {{ $product->category->title }}
-                            </div>
-
-                            <div class="product-footer">
-                                <span class="product-price">
-                                    Rs. {{ $product->price }}
-                                </span>
-
-                                <button class="add-to-cart">+ Add</button>
-                            </div>
-
-                        </a>
-
-                    </div>
-
-                @endforeach
-
-            @else
-
-                {{-- FALLBACK (IMPORTANT) --}}
-                @foreach(\App\Models\Product::where('status',1)->latest()->limit(12)->get() as $product)
-
-                    <div class="product-card">
-
-                        <a href="{{ route('frontend.details',$product->slug) }}">
-
-                            <div class="product-thumb">
-
-                                @if($product->images->first())
-                                    <img src="{{ asset('uploads/products/' . $product->images->first()->image_name) }}">
-                                @else
-                                    <div style="font-size:40px;">📦</div>
-                                @endif
-
-                                <div class="product-wish">♡</div>
-
-                            </div>
-
-                            <div class="product-name">
-                                {{ $product->title }}
-                            </div>
-
-                            <div class="product-cat">
-                                {{ $product->category->title }}
-                            </div>
-
-                            <div class="product-footer">
-                                <span class="product-price">
-                                    Rs. {{ $product->price }}
-                                </span>
-
-                                <button class="add-to-cart">+ Add</button>
-                            </div>
-
-                        </a>
-
-                    </div>
-
-                @endforeach
-
-            @endif
-
-        </div>
-
-    </div>
-
-</div>
-
+<section class="faq-section" id="faq">
+    <div class="section-title">FAQ</div>
+    <details open>
+        <summary>Which payment methods are supported?</summary>
+        <p>eSewa, PayPal, Khalti, Stripe test mode, and Cash on Delivery.</p>
+    </details>
+    <details>
+        <summary>Can I track my orders?</summary>
+        <p>Yes. Log in to your customer dashboard to view recent orders and statuses.</p>
+    </details>
+    <details id="contact">
+        <summary>How do I contact support?</summary>
+        <p>Send your order number and contact details through your preferred support channel.</p>
+    </details>
+</section>
 @endsection

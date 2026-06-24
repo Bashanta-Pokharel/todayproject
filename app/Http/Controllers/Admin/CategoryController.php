@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\CategoryCreateRequest;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\CategoryCreateRequest;
 
 class CategoryController extends Controller
 {
@@ -15,7 +14,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $data['records'] = Category::all();
+        $data['records'] = Category::withCount('products')->orderBy('rank')->get();
+
         return view('admin.category.index', compact('data'));
     }
 
@@ -32,7 +32,7 @@ class CategoryController extends Controller
      */
     public function store(CategoryCreateRequest $request)
     {
-        $data = $request->all();
+        $data = $request->validated();
         $data['created_by'] = Auth::id();
 
         Category::create($data);
@@ -49,7 +49,7 @@ class CategoryController extends Controller
     {
         $record = Category::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return redirect()->route('admin.category.index')
                 ->with('error', 'Category Not Found');
         }
@@ -64,7 +64,7 @@ class CategoryController extends Controller
     {
         $record = Category::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return redirect()->route('admin.category.index')
                 ->with('error', 'Category Not Found');
         }
@@ -76,19 +76,22 @@ class CategoryController extends Controller
      * Update category
      */
     public function update(CategoryCreateRequest $request, string $id)
-{
-    $record = Category::find($id);
+    {
+        $record = Category::find($id);
 
-    if (!$record) {
+        if (! $record) {
+            return redirect()->route('admin.category.index')
+                ->with('error', 'Category Not Found');
+        }
+
+        $data = $request->validated();
+        $data['updated_by'] = Auth::id();
+
+        $record->update($data);
+
         return redirect()->route('admin.category.index')
-            ->with('error', 'Category Not Found');
+            ->with('success', 'Category Updated Successfully');
     }
-
-    $record->update($request->all());
-
-    return redirect()->route('admin.category.index')
-        ->with('success', 'Category Updated Successfully');
-}
 
     /**
      * Delete category
@@ -104,22 +107,27 @@ class CategoryController extends Controller
         return redirect()->route('admin.category.index')
             ->with('success', 'Category Deleted Successfully');
     }
+
     public function trashed()
     {
         $data['records'] = Category::onlyTrashed()->get();
-        return view('admin.category.trashed',compact('data'));
+
+        return view('admin.category.trashed', compact('data'));
     }
 
-    public function restore($id){
+    public function restore($id)
+    {
         $record = Category::onlyTrashed()->findOrFail($id);
         $record->restore();
-        return redirect()->route('admin.category.index')->with('success','Category Restored  Successfully');
+
+        return redirect()->route('admin.category.index')->with('success', 'Category Restored  Successfully');
     }
 
-    public function forceDelete($id){
+    public function forceDelete($id)
+    {
         $record = Category::onlyTrashed()->findOrFail($id);
         $record->forceDelete();
-        return redirect()->route('admin.category.trashed')->with('success','Category Permanently Deleted  Successfully');
+
+        return redirect()->route('admin.category.trashed')->with('success', 'Category Permanently Deleted  Successfully');
     }
-    
 }

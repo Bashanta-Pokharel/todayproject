@@ -1,282 +1,163 @@
 @extends('layouts.frontend')
 
-@section('title','Home Page')
+@section('title', $data['product']->title)
+@section('meta_description', \Illuminate\Support\Str::limit(strip_tags($data['product']->description ?? ''), 150))
 
 @section('content')
-
-<style>
-    .detail-gallery{
-        display:flex;
-        flex-direction:column;
-        gap:15px;
-    }
-
-    .main-product-image{
-        width:100%;
-        height:500px;
-        object-fit:cover;
-        border-radius:16px;
-        background:#f5f5f5;
-    }
-
-    .gallery-thumbs{
-        display:flex;
-        gap:10px;
-        overflow-x:auto;
-    }
-
-    .gallery-thumb-image{
-        width:90px;
-        height:90px;
-        object-fit:cover;
-        border-radius:10px;
-        cursor:pointer;
-        border:2px solid transparent;
-        transition:0.3s;
-    }
-
-    .gallery-thumb-image.active{
-        border-color:#000;
-    }
-</style>
+@php
+    $product = $data['product'];
+    $firstImage = $product->images->first();
+    $reviewAverage = round((float) $product->approvedReviews->avg('rating'), 1);
+@endphp
 
 <div class="breadcrumb">
-    <a href="#">Home</a>
-    <span>›</span>
-
-    <a href="{{route('frontend.listing',$data['product']->category->slug)}}">
-        {{$data['product']->category->title}}
-    </a>
-
-    <span>›</span>
-
-    {{$data['product']->title}}
+    <a href="{{ route('frontend.index') }}">Home</a>
+    <span>/</span>
+    <a href="{{ route('frontend.listing', $product->category->slug) }}">{{ $product->category->title }}</a>
+    <span>/</span>
+    <span>{{ $product->title }}</span>
 </div>
 
-<div class="detail-layout">
-
-    <!-- IMAGE SECTION -->
+<section class="detail-layout">
     <div class="detail-gallery">
-
-        @php
-            $firstImage = $data['product']->images->first();
-        @endphp
-
-        <!-- MAIN IMAGE -->
         @if($firstImage)
-            <img
-                id="mainImage"
-                src="{{ asset('uploads/products/' . $firstImage->image_name) }}"
-                class="main-product-image"
-                alt=""
-            >
+            <img id="mainImage" src="{{ asset('uploads/products/'.$firstImage->image_name) }}" class="main-product-image" alt="{{ $product->title }}">
+        @else
+            <div class="empty-detail-image">No image available</div>
         @endif
 
-        <!-- ALL IMAGES -->
-        <div class="gallery-thumbs">
-
-            @foreach($data['product']->images as $key => $image)
-
-                <img
-                    src="{{ asset('uploads/products/' . $image->image_name) }}"
-                    class="gallery-thumb-image {{ $key == 0 ? 'active' : '' }}"
-                    onclick="changeImage(this)"
-                    alt=""
-                >
-
-            @endforeach
-
-        </div>
-
+        @if($product->images->count() > 1)
+            <div class="gallery-thumbs">
+                @foreach($product->images as $key => $image)
+                    <button type="button" class="gallery-thumb-button" data-image="{{ asset('uploads/products/'.$image->image_name) }}">
+                        <img src="{{ asset('uploads/products/'.$image->image_name) }}" class="gallery-thumb-image {{ $key === 0 ? 'active' : '' }}" alt="{{ $image->image_title ?? $product->title }}">
+                    </button>
+                @endforeach
+            </div>
+        @endif
     </div>
 
-    <!-- INFO SECTION -->
     <div class="detail-info-panel">
-
         <div>
-            <div class="detail-eyebrow">
-                New Arrival · {{$data['product']->category->title}}
-            </div>
-
-            <div class="detail-name">
-                {{$data['product']->title}}
-            </div>
+            <div class="detail-eyebrow">{{ $product->category->title }}</div>
+            <h1 class="detail-name">{{ $product->title }}</h1>
         </div>
 
         <div class="detail-price-row">
-
-            <strike>
-                <span class="detail-price">
-                    Rs.{{$data['product']->price}}
-                </span>
-            </strike>
-
-            <span class="detail-price">
-                Rs.{{$data['product']->price-$data['product']->discount}}
-            </span>
-
+            <span class="detail-price">Rs. {{ number_format($product->sale_price, 2) }}</span>
+            @if($product->discount > 0)
+                <span class="detail-old-price">Rs. {{ number_format($product->price, 2) }}</span>
+            @endif
         </div>
 
         <div class="detail-rating">
-            <span class="stars">★★★★★</span>
-            <span>4.9 · 84 reviews</span>
+            <span class="stars">{{ str_repeat('*', max(1, (int) round($reviewAverage ?: 5))) }}</span>
+            <span>{{ $reviewAverage > 0 ? $reviewAverage.' average rating' : 'No reviews yet' }}</span>
+        </div>
+
+        <div class="stock-pill {{ $product->is_in_stock ? 'in-stock' : 'out-stock' }}">
+            {{ $product->is_in_stock ? $product->quantity.' in stock' : 'Out of stock' }}
         </div>
 
         <div class="divider"></div>
 
         <div class="detail-desc-text">
-            {!! $data['product']->description  !!}
+            {!! nl2br(e(strip_tags($product->description ?? 'No description available.'))) !!}
         </div>
 
-        <!-- ATTRIBUTES -->
-        @foreach($data['product']->attributes as $attribute)
+        <form action="{{ route('frontend.add_to_cart') }}" method="POST" class="detail-form">
+            @csrf
+            <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+            @foreach($product->attributes as $attribute)
+                <div>
+                    <label class="detail-section-label" for="attribute-{{ $attribute->id }}">{{ $attribute->title }}</label>
+                    <select class="form-control" id="attribute-{{ $attribute->id }}" name="attribute[{{ $attribute->id }}]">
+                        <option value="">Select {{ $attribute->title }}</option>
+                        @foreach(collect(explode(',', (string) $attribute->pivot->values))->map(fn ($value) => trim($value))->filter() as $value)
+                            <option value="{{ $value }}">{{ $value }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endforeach
 
             <div>
-
-                <div class="detail-section-label">
-                    {{$attribute->title}}
-                </div>
-
-                <select class="form-control" name="attribute[{{$attribute->id}}]">
-
-                    <option value="">
-                        Select {{$attribute->title}}
-                    </option>
-
-                    @foreach(explode(',',$attribute->pivot->values) as $value)
-
-                        <option value="{{$value}}">
-                            {{$value}}
-                        </option>
-
-                    @endforeach
-
-                </select>
-
+                <label class="detail-section-label" for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ max(1, $product->quantity) }}" class="form-control">
             </div>
 
-        @endforeach
-
-        <!-- QUANTITY -->
-        <div>
-            <div class="detail-section-label">Quantity</div>
-
-            <div class="qty-row">
-                <button class="qty-btn">−</button>
-                <div class="qty-val">1</div>
-                <button class="qty-btn">+</button>
+            <div class="action-row">
+                <button type="submit" class="btn-full" @disabled(! $product->is_in_stock)>Add to cart</button>
+                @auth('customer')
+                    <button formaction="{{ route('customer.wishlist.toggle', $product) }}" formmethod="POST" class="btn-wish-full" type="submit">Wish</button>
+                @else
+                    <a href="{{ route('customer.login') }}" class="btn-wish-full">Wish</a>
+                @endauth
             </div>
-        </div>
+        </form>
+    </div>
+</section>
 
-        <!-- ACTION -->
-        <div class="action-row">
-            <button class="btn-full">Add to cart</button>
-            <button class="btn-wish-full">♡</button>
-        </div>
-
-        <div class="divider"></div>
-
+<section class="reviews-section">
+    <div class="section-header">
+        <div class="section-title">Customer reviews</div>
     </div>
 
-</div>
+    @auth('customer')
+        <form class="review-form" method="POST" action="{{ route('customer.reviews.store', $product) }}">
+            @csrf
+            <select name="rating" required>
+                <option value="">Rating</option>
+                @for($rating = 5; $rating >= 1; $rating--)
+                    <option value="{{ $rating }}">{{ $rating }} star</option>
+                @endfor
+            </select>
+            <input type="text" name="title" placeholder="Review title">
+            <textarea name="body" rows="3" placeholder="Share your experience"></textarea>
+            <button class="btn-primary" type="submit">Submit review</button>
+        </form>
+    @endauth
 
-<!-- RELATED -->
-<div class="related-section">
+    <div class="review-list">
+        @forelse($product->approvedReviews as $review)
+            <article class="review-card">
+                <strong>{{ $review->title ?? 'Customer review' }}</strong>
+                <div class="stars">{{ str_repeat('*', $review->rating) }}</div>
+                <p>{{ $review->body }}</p>
+                <small>{{ $review->customer->name }}</small>
+            </article>
+        @empty
+            <div class="empty-state">No approved reviews yet.</div>
+        @endforelse
+    </div>
+</section>
 
+<section class="related-section">
     <div class="section-header">
         <div class="section-title">You may also like</div>
-        <a href="#" class="section-link">View all →</a>
+        <a href="{{ route('frontend.listing', $product->category->slug) }}" class="section-link">View category</a>
     </div>
-
     <div class="product-grid">
-
-        <div class="product-card">
-            <div class="product-thumb">
-                <div class="product-badge">New</div>👔
-            </div>
-
-            <div class="product-name">Linen Shirt</div>
-
-            <div class="product-cat">Tops</div>
-
-            <div class="product-footer">
-                <span class="product-price">$89</span>
-
-                <button class="add-to-cart">
-                    + Add
-                </button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-thumb">🧶</div>
-
-            <div class="product-name">Merino Cardigan</div>
-
-            <div class="product-cat">Tops</div>
-
-            <div class="product-footer">
-                <span class="product-price">$145</span>
-
-                <button class="add-to-cart">
-                    + Add
-                </button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-thumb">
-                <div class="product-badge sale">Sale</div>🧤
-            </div>
-
-            <div class="product-name">Trench Coat</div>
-
-            <div class="product-cat">Outerwear</div>
-
-            <div class="product-footer">
-                <span class="product-price">$345</span>
-
-                <button class="add-to-cart">
-                    + Add
-                </button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-thumb">👘</div>
-
-            <div class="product-name">Silk Blouse</div>
-
-            <div class="product-cat">Tops</div>
-
-            <div class="product-footer">
-                <span class="product-price">$165</span>
-
-                <button class="add-to-cart">
-                    + Add
-                </button>
-            </div>
-        </div>
-
+        @forelse($data['relatedProducts'] as $relatedProduct)
+            @include('frontend.partials.product-card', ['product' => $relatedProduct])
+        @empty
+            <div class="empty-state">No related products yet.</div>
+        @endforelse
     </div>
-
-</div>
+</section>
 
 <script>
+    document.querySelectorAll('.gallery-thumb-button').forEach((button) => {
+        button.addEventListener('click', () => {
+            const mainImage = document.getElementById('mainImage');
+            if (!mainImage) {
+                return;
+            }
 
-    function changeImage(element){
-
-        document.getElementById('mainImage').src = element.src;
-
-        let images = document.querySelectorAll('.gallery-thumb-image');
-
-        images.forEach((img)=>{
-            img.classList.remove('active');
+            mainImage.src = button.dataset.image;
+            document.querySelectorAll('.gallery-thumb-image').forEach((image) => image.classList.remove('active'));
+            button.querySelector('img')?.classList.add('active');
         });
-
-        element.classList.add('active');
-    }
-
+    });
 </script>
-
 @endsection

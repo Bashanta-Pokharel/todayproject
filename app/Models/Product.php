@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -19,58 +22,78 @@ class Product extends Model
         'quantity',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
-    /*
-    |-----------------------------------
-    | CATEGORY RELATION
-    |-----------------------------------
-    */
-    public function category()
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'discount' => 'decimal:2',
+            'quantity' => 'integer',
+            'status' => 'boolean',
+        ];
+    }
+
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /*
-    |-----------------------------------
-    | PRODUCT IMAGES
-    |-----------------------------------
-    */
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
     }
 
-    /*
-    |-----------------------------------
-    | ATTRIBUTES (FIXED + EXPLICIT TABLE)
-    |-----------------------------------
-    */
-    public function attributes()
+    public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(
-                Attribute::class,
-                'attribute_product',   // ✅ explicitly define pivot table
-                'product_id',          // ✅ foreign key on this model
-                'attribute_id'         // ✅ foreign key on related model
-            )
+            Attribute::class,
+            'attribute_product',
+            'product_id',
+            'attribute_id'
+        )
             ->withPivot([
                 'values',
                 'status',
                 'created_by',
-                'updated_by'
+                'updated_by',
             ])
             ->withTimestamps();
     }
 
-    /*
-    |-----------------------------------
-    | OPTIONAL: SCOPE (ACTIVE PRODUCTS)
-    |-----------------------------------
-    */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function approvedReviews(): HasMany
+    {
+        return $this->reviews()->where('is_approved', true);
+    }
+
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
     public function scopeActive($query)
     {
-        return $query->where('status', 1);
+        return $query->where('status', true);
+    }
+
+    public function getSalePriceAttribute(): float
+    {
+        return max(0, (float) $this->price - (float) $this->discount);
+    }
+
+    public function getIsInStockAttribute(): bool
+    {
+        return $this->quantity > 0;
     }
 }

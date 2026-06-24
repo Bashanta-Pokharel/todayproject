@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\AttributeCreateRequest;
 use App\Models\Attribute;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\AttributeCreateRequest;
 
 class AttributeController extends Controller
 {
@@ -15,7 +14,8 @@ class AttributeController extends Controller
      */
     public function index()
     {
-        $data['records'] = Attribute::all();
+        $data['records'] = Attribute::orderBy('title')->get();
+
         return view('admin.attribute.index', compact('data'));
     }
 
@@ -32,7 +32,7 @@ class AttributeController extends Controller
      */
     public function store(AttributeCreateRequest $request)
     {
-        $data = $request->all();
+        $data = $request->validated();
         $data['created_by'] = Auth::id();
 
         Attribute::create($data);
@@ -49,7 +49,7 @@ class AttributeController extends Controller
     {
         $record = Attribute::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return redirect()->route('admin.attribute.index')
                 ->with('error', 'Attribute Not Found');
         }
@@ -64,7 +64,7 @@ class AttributeController extends Controller
     {
         $record = Attribute::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return redirect()->route('admin.attribute.index')
                 ->with('error', 'Attribute Not Found');
         }
@@ -79,12 +79,12 @@ class AttributeController extends Controller
     {
         $record = Attribute::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return redirect()->route('admin.attribute.index')
                 ->with('error', 'Attribute Not Found');
         }
 
-        $data = $request->all();
+        $data = $request->validated();
         $data['updated_by'] = Auth::id();
 
         $record->update($data);
@@ -145,6 +145,4 @@ class AttributeController extends Controller
             ->route('admin.attribute.trashed')
             ->with('success', 'Attribute Permanently Deleted Successfully');
     }
-    
-    
 }
