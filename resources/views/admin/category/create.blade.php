@@ -42,7 +42,7 @@
                     <!-- Title -->
                     <div class="form-group">
                         <label>Title</label>
-                        <input type="text" name="title" class="form-control">
+                        <input type="text" name="title" class="form-control" value="{{ old('title') }}">
 
                         <small class="text-danger">
                             @error('title') {{ $message }} @enderror
@@ -52,7 +52,7 @@
                     <!-- Slug -->
                     <div class="form-group">
                         <label>Slug</label>
-                        <input type="text" name="slug" class="form-control">
+                        <input type="text" name="slug" class="form-control" value="{{ old('slug') }}">
 
                         <small class="text-danger">
                             @error('slug') {{ $message }} @enderror
@@ -62,7 +62,7 @@
                     <!-- Rank -->
                     <div class="form-group">
                         <label>Rank</label>
-                        <input type="number" name="rank" class="form-control">
+                        <input type="number" name="rank" class="form-control" value="{{ old('rank') }}">
 
                         <small class="text-danger">
                             @error('rank') {{ $message }} @enderror
@@ -73,10 +73,10 @@
                     <div class="form-group">
                         <label>Status</label><br>
 
-                        <input type="radio" name="status" value="1" id="publish">
+                        <input type="radio" name="status" value="1" id="publish" @checked(old('status', '1') === '1')>
                         <label for="publish">Publish</label>
 
-                        <input type="radio" name="status" value="0" id="unpublish" checked>
+                        <input type="radio" name="status" value="0" id="unpublish" @checked(old('status') === '0')>
                         <label for="unpublish">Unpublish</label>
                     </div>
 

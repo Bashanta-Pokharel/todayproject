@@ -6,6 +6,20 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Admin Dashboard</h1>
+        <div class="mt-3 mt-sm-0">
+            <a href="{{ route('admin.product.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus mr-1"></i> Add Product
+            </a>
+            <a href="{{ route('admin.category.create') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-folder-plus mr-1"></i> Add Category
+            </a>
+            <a href="{{ route('admin.attribute.create') }}" class="btn btn-info btn-sm">
+                <i class="fas fa-tag mr-1"></i> Add Attribute
+            </a>
+            <a href="{{ route('admin.users.create') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-user-plus mr-1"></i> Create Admin
+            </a>
+        </div>
     </div>
 
     <div class="row">

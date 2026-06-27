@@ -20,7 +20,25 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register', [
+            'registrationRoute' => route('register'),
+            'willCreateAdmin' => ! $this->hasAdminUser(),
+        ]);
+    }
+
+    public function createAdmin(Request $request): RedirectResponse|View
+    {
+        if ($this->hasAdminUser()) {
+            return redirect()
+                ->route($request->user()?->isAdmin() ? 'admin.users.create' : 'login')
+                ->with('status', 'An admin account already exists.');
+        }
+
+        return view('auth.register', [
+            'adminBootstrapUser' => $request->user(),
+            'registrationRoute' => route('admin.register.store'),
+            'willCreateAdmin' => true,
+        ]);
     }
 
     /**
@@ -40,12 +58,39 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $this->hasAdminUser() ? 'customer' : 'admin',
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        $redirectRoute = $user->isAdmin() ? 'admin.dashboard' : 'dashboard';
+
+        return redirect(route($redirectRoute, absolute: false));
+    }
+
+    public function storeAdmin(Request $request): RedirectResponse
+    {
+        if ($this->hasAdminUser()) {
+            return redirect()
+                ->route($request->user()?->isAdmin() ? 'admin.users.create' : 'login')
+                ->with('status', 'An admin account already exists.');
+        }
+
+        if ($request->user()) {
+            $request->user()->forceFill([
+                'role' => 'admin',
+            ])->save();
+
+            return redirect()->route('admin.dashboard');
+        }
+
+        return $this->store($request);
+    }
+
+    private function hasAdminUser(): bool
+    {
+        return User::where('role', 'admin')->exists();
     }
 }

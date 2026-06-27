@@ -7,6 +7,7 @@
     $summary = $data['summary'];
     $customer = auth('customer')->user();
     $defaultPaymentMethod = array_key_first($data['paymentMethods']);
+    $paymentDetails = $data['paymentMethodDetails'] ?? [];
 @endphp
 
 <section class="checkout-page">
@@ -74,7 +75,13 @@
                     @foreach($data['paymentMethods'] as $value => $label)
                         <label class="payment-method">
                             <input type="radio" name="payment_method" value="{{ $value }}" @checked(old('payment_method', $defaultPaymentMethod) === $value)>
-                            <span>{{ $label }}</span>
+                            <span class="payment-method-copy">
+                                <strong>{{ $label }}</strong>
+                                <small>{{ $paymentDetails[$value]['description'] ?? 'Complete your payment securely.' }}</small>
+                                @if(! empty($paymentDetails[$value]['meta']))
+                                    <em>{{ $paymentDetails[$value]['meta'] }}</em>
+                                @endif
+                            </span>
                         </label>
                     @endforeach
                 </div>

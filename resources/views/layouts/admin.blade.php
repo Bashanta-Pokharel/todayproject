@@ -19,6 +19,61 @@
 
     <!-- Custom styles for this template-->
     <link href="{{asset('assets/backend/css/sb-admin-2.min.css')}}" rel="stylesheet">
+    <style>
+        body {
+            background: #f6f7fb;
+            color: #1f2937;
+        }
+
+        .sidebar {
+            background: #192231 !important;
+        }
+
+        .sidebar .sidebar-brand {
+            min-height: 5rem;
+            letter-spacing: .02em;
+        }
+
+        .sidebar .nav-item .nav-link,
+        .sidebar .sidebar-heading {
+            letter-spacing: .01em;
+        }
+
+        .topbar,
+        .card,
+        .dropdown-menu {
+            border: 0;
+            border-radius: .5rem;
+        }
+
+        .card {
+            overflow: hidden;
+        }
+
+        .btn {
+            border-radius: .35rem;
+            font-weight: 600;
+        }
+
+        .table th {
+            background: #f9fafb;
+            color: #4b5563;
+            font-size: .75rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .collapse-inner .collapse-item.active,
+        .collapse-inner .collapse-item:hover {
+            background: #eef2ff;
+            color: #1f2937;
+        }
+    </style>
 
 </head>
 
@@ -48,6 +103,26 @@
                 <a class="nav-link" href="{{ route('admin.dashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('frontend.index') }}" target="_blank">
+                    <i class="fas fa-fw fa-store"></i>
+                    <span>Storefront</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.users.*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseAdmins"
+                   aria-expanded="true" aria-controls="collapseAdmins">
+                    <i class="fas fa-fw fa-user-shield"></i>
+                    <span>Admin Users</span>
+                </a>
+                <div id="collapseAdmins" class="collapse {{ request()->routeIs('admin.users.*') ? 'show' : '' }}" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item {{ request()->routeIs('admin.users.create') ? 'active' : '' }}" href="{{ route('admin.users.create') }}">Create</a>
+                        <a class="collapse-item {{ request()->routeIs('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">List</a>
+                    </div>
+                </div>
             </li>
 
             <!-- Divider -->

@@ -1,5 +1,34 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    <x-auth-session-status class="mb-4" :status="session('status')" />
+
+    @if($willCreateAdmin ?? false)
+        <div class="mb-4 rounded-md border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-900">
+            Create the first admin account for this store.
+            @unless($adminBootstrapUser ?? false)
+                <div class="mt-1 text-xs text-indigo-800">
+                    Already have an account? Log in first, then open this page again to make that account admin.
+                </div>
+            @endunless
+        </div>
+    @endif
+
+    @if($adminBootstrapUser ?? false)
+        <form method="POST" action="{{ $registrationRoute ?? route('admin.register.store') }}">
+            @csrf
+
+            <div class="rounded-md border border-gray-200 bg-white px-4 py-4 text-sm text-gray-700">
+                <div class="font-semibold text-gray-900">Use this account as admin</div>
+                <div class="mt-1">{{ $adminBootstrapUser->name }} · {{ $adminBootstrapUser->email }}</div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-end">
+                <x-primary-button>
+                    {{ __('Create Admin') }}
+                </x-primary-button>
+            </div>
+        </form>
+    @else
+    <form method="POST" action="{{ $registrationRoute ?? route('register') }}">
         @csrf
 
         <!-- Name -->
@@ -45,8 +74,9 @@
             </a>
 
             <x-primary-button class="ms-4">
-                {{ __('Register') }}
+                {{ ($willCreateAdmin ?? false) ? __('Create Admin') : __('Register') }}
             </x-primary-button>
         </div>
     </form>
+    @endif
 </x-guest-layout>

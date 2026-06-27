@@ -1,14 +1,14 @@
 @extends('layouts.frontend')
 
-@section('title', 'Ligne Store')
-@section('meta_description', 'Shop curated products with search, filters, secure checkout, wishlist, and order tracking.')
+@section('title', 'B Commerce Mart')
+@section('meta_description', 'Shop Bashanta BBB products with search, filters, secure checkout, wishlist, and order tracking.')
 
 @section('content')
 <section class="hero">
     <div class="hero-text">
-        <div class="hero-eyebrow">Modern marketplace</div>
-        <h1 class="hero-h">Curated products for everyday shopping.</h1>
-        <p class="hero-sub">Search, compare, wishlist, and checkout securely with eSewa, PayPal, Khalti, Stripe test mode, or cash on delivery.</p>
+        <div class="hero-eyebrow">Bashanta BBB Marketplace</div>
+        <h1 class="hero-h">Bold gear, sharp deals, secure shopping.</h1>
+        <p class="hero-sub">Explore B Commerce Mart with curated products, fast carting, wishlists, and checkout through eSewa, QR payment, bank transfer, cash on delivery, or enabled online wallets.</p>
         <div class="hero-actions">
             <a href="#products" class="btn-primary">Shop now</a>
             <a href="#about" class="btn-outline">About us</a>
@@ -18,7 +18,7 @@
         @if(($data['featuredProducts'] ?? collect())->first()?->images->first())
             <img src="{{ asset('uploads/products/'.$data['featuredProducts']->first()->images->first()->image_name) }}" alt="Featured product">
         @else
-            <div class="hero-placeholder">Ligne</div>
+            <div class="hero-placeholder">BCM</div>
         @endif
     </div>
 </section>
@@ -73,7 +73,7 @@
 <section class="trust-band" id="about">
     <div>
         <h2>Built for confident shopping</h2>
-        <p>Every order is stored with transaction history, stock movement, and customer details so support and fulfillment stay organized.</p>
+        <p>Every B Commerce Mart order is stored with transaction history, stock movement, and customer details so support and fulfillment stay organized.</p>
     </div>
     <div class="trust-grid">
         <div><strong>Secure</strong><span>CSRF protected checkout and verified payment callbacks.</span></div>
@@ -86,7 +86,7 @@
     <div class="section-title">FAQ</div>
     <details open>
         <summary>Which payment methods are supported?</summary>
-        <p>eSewa, PayPal, Khalti, Stripe test mode, and Cash on Delivery.</p>
+        <p>eSewa, QR payment, bank transfer, Cash on Delivery, and any enabled PayPal, Khalti, or Stripe checkout.</p>
     </details>
     <details>
         <summary>Can I track my orders?</summary>

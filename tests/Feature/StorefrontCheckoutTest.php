@@ -84,6 +84,75 @@ class StorefrontCheckoutTest extends TestCase
         ]);
     }
 
+    public function test_checkout_page_shows_manual_payment_methods(): void
+    {
+        $customer = Customer::factory()->create();
+        $product = $this->product(quantity: 5, price: 1200);
+
+        $this->post(route('frontend.add_to_cart'), [
+            'product_id' => $product->id,
+            'quantity' => 1,
+        ])->assertSessionHasNoErrors();
+
+        $this->actingAs($customer, 'customer')
+            ->get(route('customer.checkout'))
+            ->assertOk()
+            ->assertSee('Bank Transfer')
+            ->assertSee('QR Payment');
+    }
+
+    public function test_customer_can_checkout_with_bank_transfer(): void
+    {
+        $customer = Customer::factory()->create();
+        $product = $this->product(quantity: 5, price: 1200);
+
+        $this->post(route('frontend.add_to_cart'), [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ])->assertSessionHasNoErrors();
+
+        $response = $this->actingAs($customer, 'customer')
+            ->post(route('customer.checkout.store'), $this->checkoutPayload('bank_transfer'));
+
+        $order = Order::firstOrFail();
+
+        $response->assertRedirect(route('payments.success', $order->order_number));
+        $this->assertSame('pending', $order->fresh()->order_status);
+        $this->assertSame('pending', $order->fresh()->payment_status);
+        $this->assertSame(3, $product->fresh()->quantity);
+        $this->assertDatabaseHas('payment_transactions', [
+            'order_id' => $order->id,
+            'provider' => 'bank_transfer',
+            'status' => 'awaiting_payment',
+        ]);
+    }
+
+    public function test_customer_can_checkout_with_qr_payment(): void
+    {
+        $customer = Customer::factory()->create();
+        $product = $this->product(quantity: 5, price: 1200);
+
+        $this->post(route('frontend.add_to_cart'), [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ])->assertSessionHasNoErrors();
+
+        $response = $this->actingAs($customer, 'customer')
+            ->post(route('customer.checkout.store'), $this->checkoutPayload('qr_payment'));
+
+        $order = Order::firstOrFail();
+
+        $response->assertRedirect(route('payments.success', $order->order_number));
+        $this->assertSame('pending', $order->fresh()->order_status);
+        $this->assertSame('pending', $order->fresh()->payment_status);
+        $this->assertSame(3, $product->fresh()->quantity);
+        $this->assertDatabaseHas('payment_transactions', [
+            'order_id' => $order->id,
+            'provider' => 'qr_payment',
+            'status' => 'awaiting_payment',
+        ]);
+    }
+
     public function test_disabled_online_payment_method_is_rejected_before_order_is_created(): void
     {
         config([

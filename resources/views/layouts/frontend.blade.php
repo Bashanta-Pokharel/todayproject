@@ -4,49 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="@yield('meta_description', 'Shop curated products with secure checkout, order tracking, and fast delivery.')">
-    <title>@yield('title', 'Ligne Store')</title>
+    <title>@yield('title', 'B Commerce Mart')</title>
     <link href="{{ asset('assets/frontend/style.css') }}" rel="stylesheet">
 </head>
 <body>
 <div class="promo-banner">
-    Secure checkout, verified payments, and free delivery on orders over Rs. 5,000.
+    Bashanta BBB deals, secure checkout, and free delivery on orders over Rs. 5,000.
 </div>
 
-<nav class="site-nav">
-    <a class="nav-logo" href="{{ route('frontend.index') }}">Ligne</a>
+<nav class="site-nav" data-site-nav>
+    <a class="nav-logo" href="{{ route('frontend.index') }}" aria-label="B Commerce Mart home">
+        <span class="brand-mark" aria-hidden="true">
+            <span class="brand-letter">B</span>
+        </span>
+        <span class="brand-text">
+            <strong>B Commerce Mart</strong>
+            <small>Bashanta BBB</small>
+        </span>
+    </a>
 
-    <div class="nav-links">
-        <a href="{{ route('frontend.index') }}" @class(['active' => request()->routeIs('frontend.index')])>Shop</a>
-        @foreach(collect($data['categories'] ?? [])->take(4) as $category)
-            <a href="{{ route('frontend.listing', $category->slug) }}" @class(['active' => request()->is('listing/'.$category->slug)])>
-                {{ $category->title }}
+    <button class="mobile-nav-toggle" type="button" data-nav-toggle aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="nav-menu" data-nav-menu>
+        <div class="nav-links">
+            <a href="{{ route('frontend.index') }}" @class(['active' => request()->routeIs('frontend.index')])>Shop</a>
+            @foreach(collect($data['categories'] ?? [])->take(4) as $category)
+                <a href="{{ route('frontend.listing', $category->slug) }}" @class(['active' => request()->is('listing/'.$category->slug)])>
+                    {{ $category->title }}
+                </a>
+            @endforeach
+        </div>
+
+        <div class="nav-right">
+            <form class="search-box" action="{{ route('frontend.index') }}" method="GET">
+                <span aria-hidden="true">⌕</span>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products">
+            </form>
+
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">◐</button>
+
+            <a class="nav-cart" href="{{ route('frontend.cart') }}">
+                Cart <span class="cart-badge">{{ \Cart::getTotalQuantity() }}</span>
             </a>
-        @endforeach
-    </div>
 
-    <div class="nav-right">
-        <form class="search-box" action="{{ route('frontend.index') }}" method="GET">
-            <span aria-hidden="true">⌕</span>
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="Search products">
-        </form>
-
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">◐</button>
-
-        <a class="nav-cart" href="{{ route('frontend.cart') }}">
-            Cart <span class="cart-badge">{{ \Cart::getTotalQuantity() }}</span>
-        </a>
-
-        <div class="nav-auth">
-            @auth('customer')
-                <a href="{{ route('customer.dashboard') }}">{{ auth('customer')->user()->name }}</a>
-                <form method="POST" action="{{ route('customer.logout') }}">
-                    @csrf
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
-            @else
-                <a href="{{ route('customer.login') }}">Login</a>
-                <a href="{{ route('customer.register') }}" class="nav-cta">Register</a>
-            @endauth
+            <div class="nav-auth">
+                @auth('customer')
+                    <a href="{{ route('customer.dashboard') }}">{{ auth('customer')->user()->name }}</a>
+                    <form method="POST" action="{{ route('customer.logout') }}">
+                        @csrf
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('customer.login') }}">Login</a>
+                    <a href="{{ route('customer.register') }}" class="nav-cta">Register</a>
+                @endauth
+            </div>
         </div>
     </div>
 </nav>
@@ -69,8 +85,8 @@
 
 <footer class="footer">
     <div>
-        <div class="footer-brand">Ligne</div>
-        <div class="footer-desc">A modern commerce experience with curated products, secure payments, and thoughtful service.</div>
+        <div class="footer-brand">B Commerce Mart</div>
+        <div class="footer-desc">A bold Bashanta marketplace for curated gear, secure payments, and thoughtful service.</div>
     </div>
     <div>
         <div class="footer-col-title">Shop</div>
@@ -100,13 +116,15 @@
     </div>
 </footer>
 <div class="footer-bottom">
-    <span>© {{ date('Y') }} Ligne. All rights reserved.</span>
+    <span>© {{ date('Y') }} B Commerce Mart. All rights reserved.</span>
     <span>Privacy · Terms · Accessibility</span>
 </div>
 
 <script>
     const toggle = document.querySelector('[data-theme-toggle]');
     const storedTheme = localStorage.getItem('theme');
+    const navToggle = document.querySelector('[data-nav-toggle]');
+    const siteNav = document.querySelector('[data-site-nav]');
 
     if (storedTheme === 'dark') {
         document.documentElement.dataset.theme = 'dark';
@@ -116,6 +134,11 @@
         const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
         document.documentElement.dataset.theme = nextTheme;
         localStorage.setItem('theme', nextTheme);
+    });
+
+    navToggle?.addEventListener('click', () => {
+        const isOpen = siteNav?.classList.toggle('is-open') ?? false;
+        navToggle.setAttribute('aria-expanded', String(isOpen));
     });
 </script>
 </body>

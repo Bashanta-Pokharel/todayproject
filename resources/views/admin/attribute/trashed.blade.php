@@ -1,100 +1,73 @@
 @extends('layouts.admin')
-@section('title','List | Product Management')
+
+@section('title', 'Trash | Attribute Management')
 
 @section('content')
 <div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Trashed Attributes</h1>
+        <div class="mt-3 mt-sm-0">
+            <a class="btn btn-success btn-sm" href="{{ route('admin.attribute.create') }}">
+                <i class="fas fa-plus mr-1"></i> Create Attribute
+            </a>
+            <a class="btn btn-primary btn-sm" href="{{ route('admin.attribute.index') }}">
+                <i class="fas fa-list mr-1"></i> Attribute List
+            </a>
+        </div>
+    </div>
 
-    <!-- Page Heading -->
-    <h1 class="h3 mb-4 text-gray-800">
-        Product Management
-        <a class="btn btn-success" href="{{ route('admin.product.create') }}">Create</a>
-        <a class="btn btn-primary" href="{{ route('admin.product.index') }}">List</a>
-    </h1>
-
-    <!-- Card -->
     <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Deleted Attributes</h6>
+        </div>
 
-        <a href="#collapseCardExample" class="d-block card-header py-3"
-           data-toggle="collapse" role="button" aria-expanded="true"
-           aria-controls="collapseCardExample">
+        <div class="card-body">
+            @include('admin.includes.flash_message')
 
-            <h6 class="m-0 font-weight-bold text-primary">
-                Product Trashed Items
-            </h6>
-        </a>
-
-        <div class="collapse show" id="collapseCardExample">
-            <div class="card-body">
-
-                @include('admin.includes.flash_message')
-
+            <div class="table-responsive">
                 <table class="table table-bordered">
-                    <tr>
-                        <th>SN</th>
-                        <th>Category</th>
-                        <th>Title</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Status</th>
-                        <th>Created By</th>
-                        <th>Deleted At</th>
-                        <th>Action</th>
-                    </tr>
+                    <thead>
+                        <tr>
+                            <th>SN</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Deleted At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($data['records'] as $record)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $record->title }}</td>
+                                <td>
+                                    @if($record->status)
+                                        <span class="badge badge-success">Published</span>
+                                    @else
+                                        <span class="badge badge-secondary">Unpublished</span>
+                                    @endif
+                                </td>
+                                <td>{{ $record->deleted_at?->format('M d, Y') }}</td>
+                                <td>
+                                    <form action="{{ route('admin.attribute.restore', $record->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-warning btn-sm">Restore</button>
+                                    </form>
 
-                    @foreach($data['records'] as $record)
-                    <tr>
-                        <td>{{ $loop->index + 1 }}</td>
-
-                        <td>{{ $record->category->title ?? 'N/A' }}</td>
-
-                        <td>{{ $record->title }}</td>
-
-                        <td>{{ $record->price }}</td>
-
-                        <td>{{ $record->quantity }}</td>
-
-                        <td>
-                            @if($record->status == 1)
-                                <span class="text-success">Published</span>
-                            @else
-                                <span class="text-danger">Un-Published</span>
-                            @endif
-                        </td>
-
-                        <!-- ✅ safer -->
-                        <td>{{ $record->created_by ?? '-' }}</td>
-
-                        <td>{{ $record->deleted_at }}</td>
-
-                        <td>
-
-                            <!-- Restore -->
-                            <form action="{{ route('admin.product.restore', $record->id) }}" method="post">
-                                @csrf
-                                <button type="submit" class="btn btn-warning mt-2">
-                                    Restore
-                                </button>
-                            </form>
-
-                            <!-- Force Delete -->
-                            <form action="{{ route('admin.product.force-delete', $record->id) }}"
-                                  method="post"
-                                  onsubmit="return confirm('Are you sure you want to permanently delete this product?')">
-
-                                @method('delete')
-                                @csrf
-
-                                <button type="submit" class="btn btn-danger mt-2">
-                                    Force Delete
-                                </button>
-                            </form>
-
-                        </td>
-                    </tr>
-                    @endforeach
-
+                                    <form action="{{ route('admin.attribute.force-delete', $record->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Permanently delete this attribute?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete Forever</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No trashed attributes.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
                 </table>
-
             </div>
         </div>
     </div>

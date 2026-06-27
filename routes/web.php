@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -20,12 +21,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-/*
-|--------------------------------------------------------------------------
-| DASHBOARD (FIXED)
-|--------------------------------------------------------------------------
-*/
 Route::get('/dashboard', function () {
+    if (auth()->user()?->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -46,11 +46,6 @@ Route::middleware('auth')->group(function () {
         ->name('profile.destroy');
 });
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN ROUTES (ALL FIXED + CLEAN)
-|--------------------------------------------------------------------------
-*/
 Route::middleware('auth')
     ->prefix('admin')
     ->name('admin.')
@@ -61,13 +56,14 @@ Route::middleware('auth')
         Route::get('orders/{order:order_number}', [OrderController::class, 'show'])->name('orders.show');
         Route::patch('orders/{order:order_number}', [OrderController::class, 'update'])->name('orders.update');
 
-        /*
-    |-----------------------
-    | PRODUCT
-    |-----------------------
-    */
+        Route::get('users', [AdminUserController::class, 'index'])
+            ->name('users.index');
 
-        Route::resource('product', ProductController::class);
+        Route::get('users/create', [AdminUserController::class, 'create'])
+            ->name('users.create');
+
+        Route::post('users', [AdminUserController::class, 'store'])
+            ->name('users.store');
 
         Route::get('product/trashed', [ProductController::class, 'trashed'])
             ->name('product.trashed');
@@ -97,13 +93,13 @@ Route::middleware('auth')
         Route::delete('product/{product}/attribute/{attribute}', [ProductController::class, 'deleteAttribute'])
             ->name('product.attribute.delete');
 
-        /*
-    |-----------------------
-    | CATEGORY
-    |-----------------------
-    */
+        Route::resource('product', ProductController::class);
 
-        Route::resource('category', CategoryController::class);
+        /*
+        |-----------------------
+        | CATEGORY
+        |-----------------------
+        */
 
         Route::get('category/trashed', [CategoryController::class, 'trashed'])
             ->name('category.trashed');
@@ -114,13 +110,13 @@ Route::middleware('auth')
         Route::delete('category/{id}/force-delete', [CategoryController::class, 'forceDelete'])
             ->name('category.force-delete');
 
-        /*
-    |-----------------------
-    | ATTRIBUTE
-    |-----------------------
-    */
+        Route::resource('category', CategoryController::class);
 
-        Route::resource('attribute', AttributeController::class);
+        /*
+        |-----------------------
+        | ATTRIBUTE
+        |-----------------------
+        */
 
         Route::get('attribute/trashed', [AttributeController::class, 'trashed'])
             ->name('attribute.trashed');
@@ -130,6 +126,8 @@ Route::middleware('auth')
 
         Route::delete('attribute/{id}/force-delete', [AttributeController::class, 'forceDelete'])
             ->name('attribute.force-delete');
+
+        Route::resource('attribute', AttributeController::class);
     });
 
 Route::name('frontend.')->group(function () {

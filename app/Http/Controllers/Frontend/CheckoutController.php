@@ -37,6 +37,7 @@ class CheckoutController extends Controller
         $data = $this->baseData();
         $data['summary'] = $summary;
         $data['paymentMethods'] = $this->paymentMethods();
+        $data['paymentMethodDetails'] = $this->paymentMethodDetails();
 
         return view('frontend.checkout', compact('data'));
     }
@@ -77,6 +78,7 @@ class CheckoutController extends Controller
 
             return match ($validated['payment_method']) {
                 'cash_on_delivery' => $this->confirmCashOnDelivery($order),
+                'bank_transfer', 'qr_payment' => $this->confirmManualPayment($order),
                 'esewa' => $this->startEsewa($order, $esewaGateway),
                 'khalti' => $this->startKhalti($order, $khaltiGateway),
                 'paypal' => $this->startPaypal($order, $paypalGateway),
@@ -235,6 +237,7 @@ class CheckoutController extends Controller
         $data['order'] = Order::with(['items.product.images', 'transactions'])
             ->where('order_number', $orderNumber)
             ->firstOrFail();
+        $data['paymentMethodDetails'] = $this->paymentMethodDetails();
 
         return view('frontend.order-success', compact('data'));
     }
@@ -316,7 +319,11 @@ class CheckoutController extends Controller
                 'reference' => $order->order_number,
                 'amount' => $order->grand_total,
                 'currency' => config('payment.default_currency', 'NPR'),
-                'status' => $validated['payment_method'] === 'cash_on_delivery' ? 'pending_collection' : 'pending',
+                'status' => match ($validated['payment_method']) {
+                    'cash_on_delivery' => 'pending_collection',
+                    'bank_transfer', 'qr_payment' => 'awaiting_payment',
+                    default => 'pending',
+                },
             ]);
 
             return $order->load('items');
@@ -329,6 +336,19 @@ class CheckoutController extends Controller
             'order_status' => 'confirmed',
             'payment_status' => 'pending',
             'confirmed_at' => now(),
+        ]);
+
+        \Cart::clear();
+        session()->forget('coupon_code');
+
+        return redirect()->route('payments.success', $order->order_number);
+    }
+
+    private function confirmManualPayment(Order $order): RedirectResponse
+    {
+        $order->update([
+            'order_status' => 'pending',
+            'payment_status' => 'pending',
         ]);
 
         \Cart::clear();
@@ -487,22 +507,70 @@ class CheckoutController extends Controller
     {
         $methods = [];
 
-        if ((bool) config('payment.esewa.enabled') && filled(config('payment.esewa.product_code')) && filled(config('payment.esewa.secret_key'))) {
-            $methods['esewa'] = 'eSewa';
+        foreach ($this->paymentMethodDetails() as $key => $method) {
+            $methods[$key] = $method['label'];
         }
 
-        $methods['cash_on_delivery'] = 'Cash on Delivery';
+        return $methods;
+    }
 
-        if ((bool) config('payment.paypal.enabled') && filled(config('payment.paypal.client_id')) && filled(config('payment.paypal.client_secret'))) {
-            $methods['paypal'] = 'PayPal';
+    /**
+     * @return array<string, array{label: string, description: string, meta?: string}>
+     */
+    private function paymentMethodDetails(): array
+    {
+        $methods = [];
+
+        if ((bool) config('payment.esewa.enabled') && filled(config('payment.esewa.product_code')) && filled(config('payment.esewa.secret_key'))) {
+            $methods['esewa'] = [
+                'label' => 'eSewa',
+                'description' => 'Pay through the eSewa checkout page.',
+            ];
         }
 
         if ((bool) config('payment.khalti.enabled') && filled(config('payment.khalti.secret_key'))) {
-            $methods['khalti'] = 'Khalti';
+            $methods['khalti'] = [
+                'label' => 'Khalti',
+                'description' => 'Pay through Khalti wallet checkout.',
+            ];
+        }
+
+        if ((bool) config('payment.qr_payment.enabled')) {
+            $methods['qr_payment'] = [
+                'label' => (string) config('payment.qr_payment.label', 'QR Payment'),
+                'description' => (string) config('payment.qr_payment.instructions'),
+            ];
+        }
+
+        if ((bool) config('payment.bank_transfer.enabled')) {
+            $methods['bank_transfer'] = [
+                'label' => 'Bank Transfer',
+                'description' => 'Transfer to the store bank account after placing your order.',
+                'meta' => implode(' | ', array_filter([
+                    (string) config('payment.bank_transfer.bank_name'),
+                    (string) config('payment.bank_transfer.account_name'),
+                    (string) config('payment.bank_transfer.account_number'),
+                ])),
+            ];
+        }
+
+        $methods['cash_on_delivery'] = [
+            'label' => 'Cash on Delivery',
+            'description' => 'Pay when your order arrives.',
+        ];
+
+        if ((bool) config('payment.paypal.enabled') && filled(config('payment.paypal.client_id')) && filled(config('payment.paypal.client_secret'))) {
+            $methods['paypal'] = [
+                'label' => 'PayPal',
+                'description' => 'Pay using PayPal checkout.',
+            ];
         }
 
         if ((bool) config('payment.stripe.enabled') && filled(config('payment.stripe.secret_key'))) {
-            $methods['stripe'] = 'Stripe Test Mode';
+            $methods['stripe'] = [
+                'label' => 'Stripe Test Mode',
+                'description' => 'Pay using Stripe test checkout.',
+            ];
         }
 
         return $methods;

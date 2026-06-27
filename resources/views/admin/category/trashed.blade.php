@@ -1,64 +1,76 @@
- 
-    @extends('layouts.admin')
-@section('title','List | Category Management')
+@extends('layouts.admin')
+
+@section('title', 'Trash | Category Management')
+
 @section('content')
 <div class="container-fluid">
-    <!-- Page Heading -->
-    <h1 class="h3 mb-4 text-gray-800">Category Management
-        <a class="btn btn-success" href="{{ route('admin.category.create') }}">Create</a>
-        <a class="btn btn-primary" href="{{ route('admin.category.index') }}">List</a>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Trashed Categories</h1>
+        <div class="mt-3 mt-sm-0">
+            <a class="btn btn-success btn-sm" href="{{ route('admin.category.create') }}">
+                <i class="fas fa-plus mr-1"></i> Create Category
+            </a>
+            <a class="btn btn-primary btn-sm" href="{{ route('admin.category.index') }}">
+                <i class="fas fa-list mr-1"></i> Category List
+            </a>
+        </div>
+    </div>
 
-    </h1>
-     <!-- Collapsable Card Example -->
-     <div class="card shadow mb-4">
-        <!-- Card Header - Accordion -->
-        <a href="#collapseCardExample" class="d-block card-header py-3" data-toggle="collapse"
-            role="button" aria-expanded="true" aria-controls="collapseCardExample">
-            <h6 class="m-0 font-weight-bold text-primary">Category Trashed Items</h6>
-        </a>
-        <!-- Card Content - Collapse -->
-        <div class="collapse show" id="collapseCardExample">
-            <div class="card-body">
-                @include('admin.includes.flash_message')
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Deleted Categories</h6>
+        </div>
+
+        <div class="card-body">
+            @include('admin.includes.flash_message')
+
+            <div class="table-responsive">
                 <table class="table table-bordered">
-                    <tr>
-                        <th>SN</th>
-                        <th>Title</th>
-                        <th>Slug</th>
-                        <th>Rank</th>
-                        <th>Status</th>
-                        <th>Created By</th>
-                        <th>Created At</th>
-                        <th>Action</th>
-                    </tr>
-                    @foreach($data['records'] as $record)
-                    <tr>
-                        <td>{{$loop->index+1}}</td>
-                        <td>{{$record->title}}</td>
-                        <td>{{$record->slug}}</td>
-                        <td>{{$record->rank}}</td>
-                        <td>
-                            @if($record->status == 1)
-                                <span class="text-success">Published</span>
-                            @else
-                                <span class="text-danger">Un-Published</span>
-                            @endif
-                        </td>
-                        <td>{{App\Models\User::find($record->created_by)->name}}</td>
-                        <td>{{$record->created_at}}</td>
-                        <td>
-                            <form action="{{ route('admin.category.restore',$record->id) }}" method="post">
-                                @csrf
-                                <button type="submit" class="btn btn-warning mt-2">Restore</button>
-                            </form>
-                             <form action="{{ route('admin.category.force-delete',$record->id) }}" method="post" onsubmit="return confirm('are you sure to delete this category permanently?')">
-                                    @method('delete')
-                                    @csrf
-                                    <button type="submit" class="btn btn-danger mt-2">Force Delete</button>
-                             </form>
-                        </td>
-                    </tr>
-                    @endforeach
+                    <thead>
+                        <tr>
+                            <th>SN</th>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Rank</th>
+                            <th>Status</th>
+                            <th>Deleted At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($data['records'] as $record)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $record->title }}</td>
+                                <td>{{ $record->slug }}</td>
+                                <td>{{ $record->rank }}</td>
+                                <td>
+                                    @if($record->status)
+                                        <span class="badge badge-success">Published</span>
+                                    @else
+                                        <span class="badge badge-secondary">Unpublished</span>
+                                    @endif
+                                </td>
+                                <td>{{ $record->deleted_at?->format('M d, Y') }}</td>
+                                <td>
+                                    <form action="{{ route('admin.category.restore', $record->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-warning btn-sm">Restore</button>
+                                    </form>
+
+                                    <form action="{{ route('admin.category.force-delete', $record->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Permanently delete this category?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete Forever</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No trashed categories.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
                 </table>
             </div>
         </div>

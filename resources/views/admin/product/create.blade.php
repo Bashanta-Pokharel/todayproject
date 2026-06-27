@@ -9,9 +9,9 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="h3 text-gray-800">Product Management</h1>
 
-                    <div>
-
-                    </div>
+                    <a href="{{ route('admin.product.index') }}" class="btn btn-secondary btn-sm">
+                        Product List
+                    </a>
                 </div>
 
                 <div class="card shadow mb-4">
@@ -46,7 +46,7 @@
                                         <select name="category_id" class="form-control">
                                             <option value="">-- Select Category --</option>
                                             @foreach($data['categories'] as $category)
-                                                <option value="{{$category->id}}">{{$category->title}}</option>
+                                                <option value="{{$category->id}}" @selected(old('category_id') == $category->id)>{{$category->title}}</option>
                                             @endforeach
                                         </select>
                                         @error('category_id')
@@ -56,14 +56,14 @@
 
                                     <div class="form-group">
                                         <label>Title</label>
-                                        <input type="text"  placeholder="Enter title" name="title" class="form-control">
+                                        <input type="text"  placeholder="Enter title" name="title" class="form-control" value="{{ old('title') }}">
                                         @error('title')
                                         <span class="text-danger">{{$message}}</span>
                                         @enderror
                                     </div>
                                     <div class="form-group">
                                         <label>Slug</label>
-                                        <input type="text" name="slug" class="form-control">
+                                        <input type="text" name="slug" class="form-control" value="{{ old('slug') }}">
                                         @error('slug')
                                         <span class="text-danger">{{$message}}</span>
                                         @enderror
@@ -71,7 +71,7 @@
 
                                     <div class="form-group">
                                         <label>Quantity</label>
-                                        <input type="number" min="1" name="quantity" class="form-control">
+                                        <input type="number" min="0" name="quantity" class="form-control" value="{{ old('quantity') }}">
                                         @error('quantity')
                                         <span class="text-danger">{{$message}}</span>
                                         @enderror
@@ -79,7 +79,7 @@
 
                                     <div class="form-group">
                                         <label>Price</label>
-                                        <input type="text" name="price" class="form-control">
+                                        <input type="number" step="0.01" min="0" name="price" class="form-control" value="{{ old('price') }}">
                                         @error('price')
                                         <span class="text-danger">{{$message}}</span>
                                         @enderror
@@ -87,7 +87,7 @@
 
                                     <div class="form-group">
                                         <label>Discount</label>
-                                        <input type="text" name="discount" class="form-control" value="0">
+                                        <input type="number" step="0.01" min="0" name="discount" class="form-control" value="{{ old('discount', 0) }}">
                                         @error('discount')
                                         <span class="text-danger">{{$message}}</span>
                                         @enderror
@@ -96,7 +96,7 @@
                                     <!-- DESCRIPTION WITH EDITOR ID -->
                                     <div class="form-group">
                                         <label>Description</label>
-                                        <textarea name="description" id="editor" class="form-control"></textarea>
+                                        <textarea name="description" id="editor" class="form-control">{{ old('description') }}</textarea>
                                         @error('description')
                                         <span class="text-danger">{{$message}}</span>
                                         @enderror
@@ -104,8 +104,8 @@
 
                                     <div class="form-group">
                                         <label>Status</label><br>
-                                        <input type="radio" name="status" value="1"> Publish
-                                        <input type="radio" name="status" value="0" checked> Un-Publish
+                                        <input type="radio" name="status" value="1" @checked(old('status', '1') === '1')> Publish
+                                        <input type="radio" name="status" value="0" @checked(old('status') === '0')> Un-Publish
                                     </div>
 
                                 </div>
@@ -195,7 +195,7 @@
                             </div>
 
                             <button type="submit" class="btn btn-success mt-3">
-                                Submit All Data
+                                Create Product
                             </button>
                         </form>
 

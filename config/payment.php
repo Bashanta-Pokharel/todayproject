@@ -34,4 +34,17 @@ return [
         'base_url' => env('STRIPE_BASE_URL', 'https://api.stripe.com/v1'),
         'currency' => env('STRIPE_CURRENCY', 'usd'),
     ],
+
+    'bank_transfer' => [
+        'enabled' => env('BANK_TRANSFER_ENABLED', true),
+        'bank_name' => env('BANK_TRANSFER_BANK_NAME', 'Your Bank Name'),
+        'account_name' => env('BANK_TRANSFER_ACCOUNT_NAME', 'B Commerce Mart'),
+        'account_number' => env('BANK_TRANSFER_ACCOUNT_NUMBER', '0000000000'),
+    ],
+
+    'qr_payment' => [
+        'enabled' => env('QR_PAYMENT_ENABLED', true),
+        'label' => env('QR_PAYMENT_LABEL', 'QR Payment'),
+        'instructions' => env('QR_PAYMENT_INSTRUCTIONS', 'Pay with your preferred mobile banking app and keep your transaction reference.'),
+    ],
 ];
